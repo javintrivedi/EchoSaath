@@ -1,28 +1,18 @@
-//
-//  MonitoringSetupView.swift
-//  EchoSaath
-//
-//  Created by Javin Trivedi on 11/03/26.
-//
-
 import SwiftUI
 import CoreLocation
 import AVFoundation
-import Photos
 
 struct MonitoringSetupView: View {
 
     @State private var locationStatus: CLAuthorizationStatus = .notDetermined
-    @State private var micAuthorized: AVAudioSession.RecordPermission = .undetermined
+    @State private var micAuthorized: AVAudioSession.RecordPermission = AVAudioSession.RecordPermission.undetermined
     @State private var cameraAuthorized: AVAuthorizationStatus = .notDetermined
     @State private var backgroundRefreshEnabled: Bool = UIApplication.shared.backgroundRefreshStatus == .available
-    @State private var requesting: Bool = false
 
     private let locationDelegate = LocationDelegate()
     private let locationManager = CLLocationManager()
 
     init() {
-        // Configure location manager delegate
         locationManager.delegate = locationDelegate
     }
 
@@ -37,9 +27,17 @@ struct MonitoringSetupView: View {
 
             VStack(spacing: 20) {
                 VStack(spacing: 8) {
-                    Text("Activate Background Monitoring")
+                    Image(systemName: "shield.checkered")
+                        .font(.system(size: 50, weight: .semibold))
+                        .foregroundStyle(
+                            LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                        .padding(.bottom, 4)
+
+                    Text("Activate Monitoring")
                         .font(.largeTitle.bold())
-                    Text("Enable these features to allow EchoSaath to detect emergencies.")
+
+                    Text("Enable these permissions so EchoSaath can protect you in emergencies.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -57,32 +55,40 @@ struct MonitoringSetupView: View {
                 )
 
                 VStack(spacing: 12) {
-                    MonitoringCard(title: "Location Monitoring", icon: "location.fill", status: readableLocationStatus(locationStatus)) {
+                    MonitoringCard(title: "Location", icon: "location.fill", status: readableLocationStatus(locationStatus)) {
                         requestLocationPermission()
                     }
 
-                    MonitoringCard(title: "Audio Detection", icon: "mic.fill", status: readableMicStatus(micAuthorized)) {
+                    MonitoringCard(title: "Microphone", icon: "mic.fill", status: readableMicStatus(micAuthorized)) {
                         requestMicrophonePermission()
                     }
 
-                    MonitoringCard(title: "Camera Recording", icon: "video.fill", status: readableCameraStatus(cameraAuthorized)) {
+                    MonitoringCard(title: "Camera", icon: "video.fill", status: readableCameraStatus(cameraAuthorized)) {
                         requestCameraPermission()
                     }
 
-                    MonitoringCard(title: "Background Monitoring", icon: "bolt.fill", status: backgroundRefreshEnabled ? "Enabled" : "Disabled") {
-                        openBackgroundSettings()
+                    MonitoringCard(title: "Background Refresh", icon: "bolt.fill", status: backgroundRefreshEnabled ? "Enabled" : "Disabled") {
+                        openAppSettings()
                     }
                 }
 
                 Spacer()
 
-                NavigationLink(destination: TrustedContactsView()) {
-                    Text("Continue")
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.pink)
-                        .cornerRadius(12)
+                NavigationLink(destination: TrustedContactsView(isOnboarding: true)) {
+                    HStack(spacing: 8) {
+                        Text("Continue")
+                            .fontWeight(.semibold)
+                        Image(systemName: "chevron.right")
+                            .font(.headline)
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        LinearGradient(colors: [.pink, .purple], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .shadow(color: .pink.opacity(0.25), radius: 10, x: 0, y: 8)
                 }
                 .padding(.horizontal)
             }
@@ -92,6 +98,7 @@ struct MonitoringSetupView: View {
         .navigationTitle("Setup Monitoring")
     }
 
+    // MARK: - Permission Logic
     private func refreshStatuses() {
         locationStatus = locationManager.authorizationStatus
         micAuthorized = AVAudioSession.sharedInstance().recordPermission
@@ -123,11 +130,6 @@ struct MonitoringSetupView: View {
         }
     }
 
-    private func openBackgroundSettings() {
-        // Direct toggling isn't allowed; guide user to Settings
-        openAppSettings()
-    }
-
     private func openAppSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         if UIApplication.shared.canOpenURL(url) {
@@ -137,30 +139,30 @@ struct MonitoringSetupView: View {
 
     private func readableLocationStatus(_ status: CLAuthorizationStatus) -> String {
         switch status {
-        case .authorizedAlways: return "Always"
+        case .authorizedAlways: return "Always ✓"
         case .authorizedWhenInUse: return "When In Use"
         case .denied: return "Denied"
         case .restricted: return "Restricted"
-        case .notDetermined: return "Not Determined"
+        case .notDetermined: return "Not Set"
         @unknown default: return "Unknown"
         }
     }
 
     private func readableMicStatus(_ status: AVAudioSession.RecordPermission) -> String {
         switch status {
-        case .granted: return "Allowed"
+        case .granted: return "Allowed ✓"
         case .denied: return "Denied"
-        case .undetermined: return "Not Determined"
+        case .undetermined: return "Not Set"
         @unknown default: return "Unknown"
         }
     }
 
     private func readableCameraStatus(_ status: AVAuthorizationStatus) -> String {
         switch status {
-        case .authorized: return "Allowed"
+        case .authorized: return "Allowed ✓"
         case .denied: return "Denied"
         case .restricted: return "Restricted"
-        case .notDetermined: return "Not Determined"
+        case .notDetermined: return "Not Set"
         @unknown default: return "Unknown"
         }
     }
@@ -172,14 +174,20 @@ struct MonitoringCard: View {
     var status: String
     var action: () -> Void
 
+    private var isGranted: Bool {
+        status.contains("✓") || status == "Enabled"
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
                 Image(systemName: icon)
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .background(LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 40, height: 40)
+                    .background(
+                        LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -188,13 +196,18 @@ struct MonitoringCard: View {
                         .foregroundStyle(.primary)
                     Text(status)
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(isGranted ? .green : .secondary)
                 }
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(.secondary)
+                if isGranted {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                } else {
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding()
             .background(
@@ -203,12 +216,10 @@ struct MonitoringCard: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color(.separator), lineWidth: 0.5)
+                    .stroke(isGranted ? Color.green.opacity(0.3) : Color(.separator).opacity(0.5), lineWidth: 0.5)
             )
         }
         .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel("\(title) permission")
-        .accessibilityHint("Tap to request access")
     }
 }
 

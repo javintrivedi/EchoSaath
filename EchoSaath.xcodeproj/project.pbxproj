@@ -11,20 +11,32 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		36A9CBB22F61640100CC3F14 /* Exceptions for "EchoSaath" folder in "EchoSaath" target */ = {
+		36DF919B2F7414EE00847700 /* Exceptions for "EchoSaath" folder in "EchoSaath" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Main/HomeView.swift,
+				EchoSaath.xcdatamodeld,
+				Info.plist,
 			);
 			target = 36A9CB8E2F61621C00CC3F14 /* EchoSaath */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		36DF919C2F7414EE00847700 /* Exceptions for "EchoSaath" folder in "Compile Sources" phase from "EchoSaath" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 36A9CB8B2F61621C00CC3F14 /* Sources */;
+			membershipExceptions = (
+				EchoSaath.xcdatamodeld,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		36A9CB912F61621C00CC3F14 /* EchoSaath */ = {
+		36DF91812F7414ED00847700 /* EchoSaath */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				36A9CBB22F61640100CC3F14 /* Exceptions for "EchoSaath" folder in "EchoSaath" target */,
+				36DF919B2F7414EE00847700 /* Exceptions for "EchoSaath" folder in "EchoSaath" target */,
+				36DF919C2F7414EE00847700 /* Exceptions for "EchoSaath" folder in "Compile Sources" phase from "EchoSaath" target */,
 			);
 			path = EchoSaath;
 			sourceTree = "<group>";
@@ -45,7 +57,7 @@
 		36A9CB862F61621C00CC3F14 = {
 			isa = PBXGroup;
 			children = (
-				36A9CB912F61621C00CC3F14 /* EchoSaath */,
+				36DF91812F7414ED00847700 /* EchoSaath */,
 				36A9CB902F61621C00CC3F14 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -74,7 +86,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				36A9CB912F61621C00CC3F14 /* EchoSaath */,
+				36DF91812F7414ED00847700 /* EchoSaath */,
 			);
 			name = EchoSaath;
 			packageProductDependencies = (
@@ -264,6 +276,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2PJR2359N2;
@@ -296,6 +309,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2PJR2359N2;

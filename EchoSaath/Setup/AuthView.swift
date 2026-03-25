@@ -1,10 +1,12 @@
 import SwiftUI
 
 struct AuthView: View {
+    @ObservedObject var authVM = AuthViewModel.shared
     @State private var selection: AuthMode = .login
 
     var body: some View {
         ZStack {
+            // Background
             LinearGradient(
                 colors: [Color.pink.opacity(0.25), Color.purple.opacity(0.25)],
                 startPoint: .topLeading,
@@ -12,202 +14,205 @@ struct AuthView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 16) {
-                Picker("Authentication", selection: $selection) {
-                    Text("Login").tag(AuthMode.login)
-                    Text("Sign Up").tag(AuthMode.signup)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Logo area
+                    VStack(spacing: 8) {
+                        Image(systemName: "shield.checkered")
+                            .font(.system(size: 56, weight: .semibold))
+                            .foregroundStyle(
+                                LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            )
 
-                Group {
-                    switch selection {
-                    case .login:
-                        LoginFormView()
-                    case .signup:
-                        SignupFormView()
+                        Text("EchoSaath")
+                            .font(.title.bold())
+                            .foregroundStyle(.primary)
+
+                        Text("Your safety companion")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                )
-                .padding(.horizontal)
+                    .padding(.top, 40)
 
-                Spacer()
+                    // Segmented picker
+                    Picker("Authentication", selection: $selection) {
+                        Text("Login").tag(AuthMode.login)
+                        Text("Sign Up").tag(AuthMode.signup)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+
+                    // Form card
+                    Group {
+                        switch selection {
+                        case .login:
+                            LoginFormView()
+                        case .signup:
+                            SignupFormView()
+                        }
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                    )
+                    .padding(.horizontal)
+
+                    // Error message
+                    if let error = authVM.errorMessage {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.red)
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.red.opacity(0.1))
+                        )
+                        .padding(.horizontal)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
+                    Spacer(minLength: 40)
+                }
             }
-            .padding(.top)
         }
-        .navigationTitle(selection == .login ? "Login" : "Sign Up")
+        .navigationTitle(selection == .login ? "Welcome Back" : "Create Account")
+        .navigationBarTitleDisplayMode(.inline)
+        .disabled(authVM.isLoading)
+        .animation(.easeInOut(duration: 0.25), value: authVM.errorMessage)
     }
 }
 
 private enum AuthMode { case login, signup }
 
+// MARK: - Login Form
 private struct LoginFormView: View {
-    @State private var email: String = ""
-    @State private var password: String = ""
-    @State private var isLoading: Bool = false
-    @State private var errorMessage: String?
+    @ObservedObject var authVM = AuthViewModel.shared
+    @State private var email = ""
+    @State private var password = ""
 
     var body: some View {
-        VStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Email").font(.caption).foregroundStyle(.secondary)
+        VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Email").font(.caption.bold()).foregroundStyle(.secondary)
                 TextField("name@example.com", text: $email)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Password").font(.caption).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Password").font(.caption.bold()).foregroundStyle(.secondary)
                 SecureField("••••••••", text: $password)
                     .textContentType(.password)
-                    .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
             }
 
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            Button(action: login) {
-                HStack {
-                    if isLoading { ProgressView().tint(.white) }
-                    Text("Login").bold()
+            Button(action: { authVM.login(email: email, password: password) }) {
+                HStack(spacing: 8) {
+                    if authVM.isLoading {
+                        ProgressView().tint(.white)
+                    }
+                    Text("Login").fontWeight(.semibold)
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.pink)
                 .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    LinearGradient(colors: [.pink, .purple], startPoint: .leading, endPoint: .trailing)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .shadow(color: .pink.opacity(0.25), radius: 8, x: 0, y: 4)
             }
-            .disabled(isLoading)
-        }
-    }
-
-    private func login() {
-        errorMessage = nil
-        guard validateEmail(email), !password.isEmpty else {
-            errorMessage = "Please enter a valid email and password."
-            return
-        }
-        isLoading = true
-        // TODO: Integrate real auth API
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            isLoading = false
-            // Persist auth/onboarding completion so the app shows Home next time
-            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
-            // Navigate to RootView by replacing the window's root controller
-            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = scene.windows.first {
-                window.rootViewController = UIHostingController(rootView: RootView())
-                window.makeKeyAndVisible()
-            }
+            .disabled(authVM.isLoading)
         }
     }
 }
 
+// MARK: - Signup Form
 private struct SignupFormView: View {
-    @State private var name: String = ""
-    @State private var email: String = ""
-    @State private var password: String = ""
-    @State private var confirmPassword: String = ""
-    @State private var isLoading: Bool = false
-    @State private var errorMessage: String?
+    @ObservedObject var authVM = AuthViewModel.shared
+    @State private var name = ""
+    @State private var email = ""
+    @State private var password = ""
+    @State private var confirmPassword = ""
 
     var body: some View {
-        VStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Full Name").font(.caption).foregroundStyle(.secondary)
+        VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Full Name").font(.caption.bold()).foregroundStyle(.secondary)
                 TextField("Jane Doe", text: $name)
                     .textContentType(.name)
                     .textInputAutocapitalization(.words)
-                    .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Email").font(.caption).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Email").font(.caption.bold()).foregroundStyle(.secondary)
                 TextField("name@example.com", text: $email)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Password").font(.caption).foregroundStyle(.secondary)
-                SecureField("Create a password", text: $password)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Password").font(.caption.bold()).foregroundStyle(.secondary)
+                SecureField("Minimum 6 characters", text: $password)
                     .textContentType(.newPassword)
-                    .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Confirm Password").font(.caption).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Confirm Password").font(.caption.bold()).foregroundStyle(.secondary)
                 SecureField("Re-enter password", text: $confirmPassword)
                     .textContentType(.newPassword)
-                    .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
             }
 
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            Button(action: signup) {
-                HStack {
-                    if isLoading { ProgressView().tint(.white) }
-                    Text("Create Account").bold()
+            Button(action: {
+                authVM.signUp(name: name, email: email, password: password, confirmPassword: confirmPassword)
+            }) {
+                HStack(spacing: 8) {
+                    if authVM.isLoading {
+                        ProgressView().tint(.white)
+                    }
+                    Text("Create Account").fontWeight(.semibold)
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.pink)
                 .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    LinearGradient(colors: [.pink, .purple], startPoint: .leading, endPoint: .trailing)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .shadow(color: .pink.opacity(0.25), radius: 8, x: 0, y: 4)
             }
-            .disabled(isLoading)
+            .disabled(authVM.isLoading)
         }
     }
-
-    private func signup() {
-        errorMessage = nil
-        guard !name.isEmpty, validateEmail(email), password.count >= 6, password == confirmPassword else {
-            errorMessage = "Please complete all fields. Password must be at least 6 characters and match."
-            return
-        }
-        isLoading = true
-        // TODO: Integrate real sign-up API
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            isLoading = false
-        }
-    }
-}
-
-// MARK: - Helpers
-private func validateEmail(_ email: String) -> Bool {
-    let pattern = #"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$"#
-    return email.range(of: pattern, options: [.regularExpression, .caseInsensitive]) != nil
 }
 
 #Preview {
-    NavigationStack { AuthView() }
+    NavigationStack {
+        AuthView()
+    }
 }
