@@ -7,36 +7,57 @@ struct TimelineView: View {
     @State private var query: String = ""
     @State private var selectedRisk: RiskLevel? = nil
     @State private var isRefreshing = false
+    @State private var selectedTab: TimelineTab = .events
+
+    private enum TimelineTab: String, CaseIterable {
+        case events = "Events"
+        case routeMap = "Route Map"
+    }
 
     var body: some View {
         ZStack {
             Color(red: 1.0, green: 0.94, blue: 0.96).ignoresSafeArea()
 
-            ScrollView {
-                if filteredAndGrouped.isEmpty {
-                    emptyState
+            VStack(spacing: 0) {
+                Picker("View", selection: $selectedTab) {
+                    ForEach(TimelineTab.allCases, id: \.self) { tab in
+                        Text(tab.rawValue).tag(tab)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+
+                if selectedTab == .routeMap {
+                    RouteMapView()
                 } else {
-                    LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
-                        ForEach(filteredAndGrouped.keys.sorted(by: >), id: \.self) { day in
-                            Section {
-                                ForEach(Array(filteredAndGrouped[day]!.enumerated()), id: \.1.id) { index, event in
-                                    timelineRow(event: event, isLast: index == filteredAndGrouped[day]!.count - 1)
+                    ScrollView {
+                        if filteredAndGrouped.isEmpty {
+                            emptyState
+                        } else {
+                            LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                                ForEach(filteredAndGrouped.keys.sorted(by: >), id: \.self) { day in
+                                    Section {
+                                        ForEach(Array(filteredAndGrouped[day]!.enumerated()), id: \.1.id) { index, event in
+                                            timelineRow(event: event, isLast: index == filteredAndGrouped[day]!.count - 1)
+                                        }
+                                    } header: {
+                                        sectionHeader(day)
+                                    }
                                 }
-                            } header: {
-                                sectionHeader(day)
                             }
+                            .padding(.top)
                         }
                     }
-                    .padding(.top)
+                    .refreshable {
+                        isRefreshing = true
+                        try? await Task.sleep(nanoseconds: 500_000_000)
+                        isRefreshing = false
+                    }
+                    .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search events")
                 }
             }
         }
-        .refreshable {
-            isRefreshing = true
-            try? await Task.sleep(nanoseconds: 500_000_000)
-            isRefreshing = false
-        }
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search events")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

@@ -14,29 +14,17 @@
 		36DF919B2F7414EE00847700 /* Exceptions for "EchoSaath" folder in "EchoSaath" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				EchoSaath.xcdatamodeld,
 				Info.plist,
 			);
 			target = 36A9CB8E2F61621C00CC3F14 /* EchoSaath */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		36DF919C2F7414EE00847700 /* Exceptions for "EchoSaath" folder in "Compile Sources" phase from "EchoSaath" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = 36A9CB8B2F61621C00CC3F14 /* Sources */;
-			membershipExceptions = (
-				EchoSaath.xcdatamodeld,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		36DF91812F7414ED00847700 /* EchoSaath */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				36DF919B2F7414EE00847700 /* Exceptions for "EchoSaath" folder in "EchoSaath" target */,
-				36DF919C2F7414EE00847700 /* Exceptions for "EchoSaath" folder in "Compile Sources" phase from "EchoSaath" target */,
 			);
 			path = EchoSaath;
 			sourceTree = "<group>";

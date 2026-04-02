@@ -32,6 +32,7 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
             .environmentObject(AuthViewModel.shared)
             .environmentObject(EventProcessor.shared)
             .environmentObject(SensorManager.shared)
+            .environmentObject(RouteTracker.shared)
 
         shakeWindow.rootViewController = UIHostingController(rootView: rootView)
         shakeWindow.makeKeyAndVisible()

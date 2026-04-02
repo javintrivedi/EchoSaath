@@ -17,6 +17,8 @@ class EventProcessor: ObservableObject {
         loadEvents()
         setupSensorSubscription()
         setupShakeSubscription()
+        // Start route learning system
+        RouteTracker.shared.startListening()
     }
 
     // MARK: - Sensor Subscription
@@ -54,8 +56,9 @@ class EventProcessor: ObservableObject {
             } else {
                 trigger(level: .elevated, reason: "Sudden motion detected (magnitude: \(String(format: "%.1f", magnitude)))")
             }
-        case .locationUpdate:
-            break // Route learning / geofence logic placeholder
+        case .locationUpdate(let location):
+            // Forward to route learning system
+            RouteTracker.shared.processLocation(location)
         case .deviceStationary(let duration):
             if duration > 300 {
                 trigger(level: .elevated, reason: "Device inactive for \(Int(duration / 60)) minutes")

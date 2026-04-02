@@ -26,17 +26,19 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     override init() {
         super.init()
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        locationManager.distanceFilter = 15
     }
 
     func startMonitoring() {
         guard !isMonitoring else { return }
         isMonitoring = true
 
-        locationManager.requestWhenInUseAuthorization()
-
-        // Only enable background location after authorization is in place
-        if CLLocationManager.authorizationStatus() == .authorizedAlways {
+        let status = locationManager.authorizationStatus
+        if status == .notDetermined || status == .authorizedWhenInUse {
+            locationManager.requestAlwaysAuthorization()
+        }
+        if status == .authorizedAlways {
             locationManager.allowsBackgroundLocationUpdates = true
             locationManager.pausesLocationUpdatesAutomatically = false
         }
@@ -79,6 +81,16 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         currentLocation = location
         eventPublisher.send(.locationUpdate(location))
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        let status = manager.authorizationStatus
+        if status == .authorizedAlways {
+            locationManager.allowsBackgroundLocationUpdates = true
+            locationManager.pausesLocationUpdatesAutomatically = false
+        } else if status == .authorizedWhenInUse {
+            locationManager.allowsBackgroundLocationUpdates = false
+        }
     }
 }
 

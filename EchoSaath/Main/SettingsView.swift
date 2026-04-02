@@ -100,6 +100,11 @@ struct SettingsView: View {
                 } label: {
                     Label("Review Notification Permission", systemImage: "bell.badge")
                 }
+
+                NavigationLink(destination: NotificationLogView()) {
+                    Label("Notification Log", systemImage: "list.bullet.rectangle")
+                        .badge(NotificationLogger.shared.failedCount)
+                }
             }
 
             // MARK: - Debug & Support

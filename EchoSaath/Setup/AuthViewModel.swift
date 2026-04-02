@@ -109,6 +109,9 @@ class AuthViewModel: ObservableObject {
             self.currentUserEmail = email
             self.isLoading = false
             self.isLoggedIn = true
+
+            // Send welcome email via SendGrid
+            NotificationService.shared.sendWelcomeEmail(name: name, email: email)
         }
     }
 

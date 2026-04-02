@@ -18,6 +18,7 @@ class AlertManager: NSObject, ObservableObject {
         lastAlertTime = Date()
         sendLocalNotification(event: event)
         sendSMSToContacts(event: event)
+        sendBackendSMS(event: event)
     }
 
     private func sendLocalNotification(event: ProcessedEvent) {
@@ -30,18 +31,16 @@ class AlertManager: NSObject, ObservableObject {
         let request = UNNotificationRequest(
             identifier: event.id.uuidString,
             content: content,
-            trigger: nil // immediate
+            trigger: nil
         )
         UNUserNotificationCenter.current().add(request)
 
-        // Haptic burst for critical alerts
         DispatchQueue.main.async {
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.error)
         }
     }
 
-    // SMS via MessageUI (posts notification to present SMS sheet from UI layer)
     func sendSMSToContacts(event: ProcessedEvent) {
         let contacts = TrustedContactsStore.shared.contacts
         guard !contacts.isEmpty else { return }
@@ -50,6 +49,16 @@ class AlertManager: NSObject, ObservableObject {
             name: .triggerSMSAlert,
             object: nil,
             userInfo: ["contacts": contacts, "event": event]
+        )
+    }
+
+    private func sendBackendSMS(event: ProcessedEvent) {
+        let contacts = TrustedContactsStore.shared.contacts
+        guard !contacts.isEmpty else { return }
+        NotificationService.shared.sendEmergencySMS(
+            event: event,
+            location: SensorManager.shared.currentLocation,
+            contacts: contacts
         )
     }
 }
