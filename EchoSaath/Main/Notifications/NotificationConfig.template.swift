@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Notification Configuration Template
 // COPY THIS TO NotificationConfig.swift AND FILL IN YOUR CREDENTIALS
-enum NotificationConfig {
+enum NotificationConfigTemplate {
 
     // ─── Twilio Credentials (SMS) ───────────────────────────
     static let twilioAccountSID = "YOUR_TWILIO_SID"

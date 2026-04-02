@@ -13,6 +13,9 @@ struct RouteMapView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             Map(position: $mapPosition) {
+                // Show current user location
+                UserAnnotation()
+
                 // Draw stored routes
                 ForEach(filteredRoutes) { route in
                     MapPolyline(coordinates: route.points.map { $0.coordinate })
@@ -35,7 +38,32 @@ struct RouteMapView: View {
                 }
             }
             .mapStyle(.standard(elevation: .flat))
+            .mapControls {
+                MapUserLocationButton()
+                MapCompass()
+            }
             .onTapGesture { /* consume taps */ }
+            
+            // Re-center button
+            VStack {
+                HStack {
+                    Spacer()
+                    Button {
+                        withAnimation {
+                            mapPosition = .userLocation(fallback: .automatic)
+                        }
+                    } label: {
+                        Image(systemName: "location.fill")
+                            .padding(10)
+                            .background(.white)
+                            .clipShape(Circle())
+                            .shadow(radius: 4)
+                    }
+                    .padding(.trailing, 16)
+                    .padding(.top, 16)
+                }
+                Spacer()
+            }
 
             // Bottom overlay
             VStack(spacing: 0) {
