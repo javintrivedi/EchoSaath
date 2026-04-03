@@ -22,9 +22,11 @@ final class TrustedContactsStore: ObservableObject {
     }
 
     private let storageKey = "trustedContacts"
+    private var isInitializing = true
 
     private init() {
         load()
+        isInitializing = false
     }
 
     // MARK: - Public API
@@ -49,6 +51,7 @@ final class TrustedContactsStore: ObservableObject {
 
     // MARK: - Persistence
     private func persist() {
+        guard !isInitializing else { return }
         do {
             let data = try JSONEncoder().encode(contacts)
             UserDefaults.standard.set(data, forKey: storageKey)

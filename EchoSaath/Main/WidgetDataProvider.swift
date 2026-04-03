@@ -31,50 +31,53 @@ final class WidgetDataProvider {
 
     /// Snapshots the current app state into shared defaults and reloads widget timelines.
     func updateWidgetData() {
-        guard let defaults else { return }
+        // Defer execution to avoid breaking singletons that might still be initializing
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let defaults = self.defaults else { return }
 
-        let processor = EventProcessor.shared
-        let sensor = SensorManager.shared
-        let contacts = TrustedContactsStore.shared
-        let routeTracker = RouteTracker.shared
+            let processor = EventProcessor.shared
+            let sensor = SensorManager.shared
+            let contacts = TrustedContactsStore.shared
+            let routeTracker = RouteTracker.shared
 
-        // Monitoring status
-        defaults.set(sensor.isMonitoring, forKey: Key.isMonitoring)
+            // Monitoring status
+            defaults.set(sensor.isMonitoring, forKey: Key.isMonitoring)
 
-        // Today's alert count
-        let cal = Calendar.current
-        let alertCount = processor.recentEvents.filter {
-            cal.isDateInToday($0.timestamp) &&
-            ($0.riskLevel == .critical || $0.riskLevel == .elevated)
-        }.count
-        defaults.set(alertCount, forKey: Key.alertCount)
+            // Today's alert count
+            let cal = Calendar.current
+            let alertCount = processor.recentEvents.filter {
+                cal.isDateInToday($0.timestamp) &&
+                ($0.riskLevel == .critical || $0.riskLevel == .elevated)
+            }.count
+            defaults.set(alertCount, forKey: Key.alertCount)
 
-        // Trusted contacts count
-        defaults.set(contacts.contacts.count, forKey: Key.contactCount)
+            // Trusted contacts count
+            defaults.set(contacts.contacts.count, forKey: Key.contactCount)
 
-        // Route tracking status
-        let routeStatusString: String
-        switch routeTracker.status {
-        case .idle:      routeStatusString = "idle"
-        case .tracking:  routeStatusString = "tracking"
-        case .analyzing: routeStatusString = "analyzing"
+            // Route tracking status
+            let routeStatusString: String
+            switch routeTracker.status {
+            case .idle:      routeStatusString = "idle"
+            case .tracking:  routeStatusString = "tracking"
+            case .analyzing: routeStatusString = "analyzing"
+            }
+            defaults.set(routeStatusString, forKey: Key.routeStatus)
+
+            // Last event info
+            if let lastEvent = processor.recentEvents.first {
+                defaults.set(lastEvent.reason, forKey: Key.lastEventReason)
+                defaults.set(lastEvent.timestamp, forKey: Key.lastEventTime)
+                defaults.set(lastEvent.riskLevel.rawValue, forKey: Key.lastEventRisk)
+            }
+
+            // User name
+            defaults.set(AuthViewModel.shared.currentUserName, forKey: Key.userName)
+
+            // Timestamp
+            defaults.set(Date(), forKey: Key.lastUpdated)
+
+            // Trigger widget refresh
+            WidgetCenter.shared.reloadAllTimelines()
         }
-        defaults.set(routeStatusString, forKey: Key.routeStatus)
-
-        // Last event info
-        if let lastEvent = processor.recentEvents.first {
-            defaults.set(lastEvent.reason, forKey: Key.lastEventReason)
-            defaults.set(lastEvent.timestamp, forKey: Key.lastEventTime)
-            defaults.set(lastEvent.riskLevel.rawValue, forKey: Key.lastEventRisk)
-        }
-
-        // User name
-        defaults.set(AuthViewModel.shared.currentUserName, forKey: Key.userName)
-
-        // Timestamp
-        defaults.set(Date(), forKey: Key.lastUpdated)
-
-        // Trigger widget refresh
-        WidgetCenter.shared.reloadAllTimelines()
     }
 }
