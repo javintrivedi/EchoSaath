@@ -38,6 +38,10 @@ struct SettingsView: View {
                     Spacer()
                 }
                 .padding(.vertical, 4)
+                
+                NavigationLink(destination: ProfileSetupView()) {
+                    Label("Medical & Physical Profile", systemImage: "heart.text.square.fill")
+                }
             }
 
             // MARK: - Monitoring

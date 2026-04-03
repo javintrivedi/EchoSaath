@@ -14,13 +14,19 @@ struct RootView: View {
                 NavigationStack {
                     AuthView()
                 }
+            } else if !authVM.hasCompletedProfile {
+                // Step 3: Profile Setup
+                NavigationStack {
+                    ProfileSetupView()
+                }
             } else {
-                // Step 3: Main app
+                // Step 4: Main app
                 MainTabView()
             }
         }
         .animation(.easeInOut(duration: 0.35), value: hasCompletedOnboarding)
         .animation(.easeInOut(duration: 0.35), value: authVM.isLoggedIn)
+        .animation(.easeInOut(duration: 0.35), value: authVM.hasCompletedProfile)
     }
 }
 

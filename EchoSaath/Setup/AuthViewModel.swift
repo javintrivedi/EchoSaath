@@ -54,11 +54,13 @@ class AuthViewModel: ObservableObject {
     @Published var currentUserEmail: String = ""
     @Published var errorMessage: String?
     @Published var isLoading: Bool = false
+    @Published var hasCompletedProfile: Bool = false
 
     private let emailKey = "echosaath_user_email"
     private let passwordKey = "echosaath_user_password"
     private let nameKey = "echosaath_user_name"
     private let sessionKey = "echosaath_session_active"
+    private let profileCompletedKey = "echosaath_profile_completed"
 
     private init() {
         // Restore session
@@ -66,6 +68,7 @@ class AuthViewModel: ObservableObject {
             isLoggedIn = true
             currentUserName = KeychainHelper.loadString(forKey: nameKey) ?? ""
             currentUserEmail = KeychainHelper.loadString(forKey: emailKey) ?? ""
+            hasCompletedProfile = UserDefaults.standard.bool(forKey: profileCompletedKey)
         }
     }
 
@@ -150,9 +153,16 @@ class AuthViewModel: ObservableObject {
 
             self.currentUserName = storedName
             self.currentUserEmail = storedEmail
+            self.hasCompletedProfile = UserDefaults.standard.bool(forKey: self.profileCompletedKey)
             self.isLoading = false
             self.isLoggedIn = true
         }
+    }
+
+    // MARK: - Profile Status
+    func markProfileCompleted() {
+        self.hasCompletedProfile = true
+        UserDefaults.standard.set(true, forKey: profileCompletedKey)
     }
 
     // MARK: - Logout
@@ -161,6 +171,7 @@ class AuthViewModel: ObservableObject {
         currentUserName = ""
         currentUserEmail = ""
         isLoggedIn = false
+        hasCompletedProfile = false
     }
 
     // MARK: - Helpers
