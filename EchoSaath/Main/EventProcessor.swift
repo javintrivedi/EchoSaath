@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import WidgetKit
+import UserNotifications
 
 class EventProcessor: ObservableObject {
     static let shared = EventProcessor()
@@ -9,6 +10,12 @@ class EventProcessor: ObservableObject {
     @Published var recentEvents: [Event] = [] {
         didSet { persistEvents() }
     }
+
+    // MARK: - Safety Prompt State
+    @Published var showSafetyPrompt: Bool = false
+    @Published var pendingSafetyReason: String? = nil
+    private var safetyPromptTimeout: Timer?
+
 
     private var cancellables = Set<AnyCancellable>()
     private var hasSubscribed = false
@@ -113,6 +120,41 @@ class EventProcessor: ObservableObject {
     // MARK: - Manual SOS
     func triggerManualSOS() {
         trigger(level: .critical, reason: "🆘 Manual SOS activated!")
+    }
+
+    // MARK: - Safety Prompt
+    func requestSafetyConfirmation(reason: String) {
+        pendingSafetyReason = reason
+        showSafetyPrompt = true
+        
+        // Notify user via local notification so they open the app
+        let content = UNMutableNotificationContent()
+        content.title = "Route Change Detected"
+        content.body = "Is this your safe path? Open app to verify."
+        content.sound = .default
+        
+        let req = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(req)
+
+        safetyPromptTimeout?.invalidate()
+        safetyPromptTimeout = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false) { [weak self] _ in
+            self?.resolveSafetyPrompt(isSafe: false) // timeout triggers SMS
+        }
+    }
+
+    func resolveSafetyPrompt(isSafe: Bool) {
+        guard showSafetyPrompt else { return }
+        
+        safetyPromptTimeout?.invalidate()
+        showSafetyPrompt = false
+
+        if isSafe {
+            trigger(level: .normal, reason: "✅ Marked new route as safe")
+        } else {
+            let reason = pendingSafetyReason ?? "⚠️ Route deviation — User unconfirmed/unsafe"
+            trigger(level: .critical, reason: reason)
+        }
+        pendingSafetyReason = nil
     }
 
     // MARK: - Persistence

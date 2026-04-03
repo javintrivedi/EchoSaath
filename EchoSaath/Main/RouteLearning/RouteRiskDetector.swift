@@ -10,9 +10,26 @@ final class RouteRiskDetector {
     private var lastAlertTime: Date = .distantPast
     private let alertCooldown: TimeInterval = 120 // 2 min between alerts
 
+    private var isLearningPhase: Bool {
+        let key = "learningPhaseStartDate"
+        let defaults = UserDefaults.standard
+        let startDate: Date
+        if let storedDate = defaults.object(forKey: key) as? Date {
+            startDate = storedDate
+        } else {
+            startDate = Date()
+            defaults.set(startDate, forKey: key)
+        }
+        
+        // 10-day learning phase
+        let daysPassed = Calendar.current.dateComponents([.day], from: startDate, to: Date()).day ?? 0
+        return daysPassed < 10
+    }
+
     private init() {}
 
     func checkLiveRoute(points: [RoutePoint], currentLocation: CLLocation) {
+        guard !isLearningPhase else { return } // Skip alerts during the 10-day learning phase
         guard Date().timeIntervalSince(lastAlertTime) > alertCooldown else { return }
 
         let clusters = RouteStore.shared.loadClusters()
@@ -32,8 +49,7 @@ final class RouteRiskDetector {
         if minDeviation > deviationThreshold {
             lastAlertTime = .now
             DispatchQueue.main.async {
-                EventProcessor.shared.trigger(
-                    level: .elevated,
+                EventProcessor.shared.requestSafetyConfirmation(
                     reason: "⚠️ Route deviation detected — \(Int(minDeviation))m from known safe route"
                 )
             }
@@ -41,6 +57,7 @@ final class RouteRiskDetector {
     }
 
     func checkUnexpectedStop(location: CLLocation, stoppedDuration: TimeInterval) {
+        guard !isLearningPhase else { return }
         guard stoppedDuration > unexpectedStopDuration else { return }
         guard Date().timeIntervalSince(lastAlertTime) > alertCooldown else { return }
 
@@ -55,8 +72,7 @@ final class RouteRiskDetector {
         if !isNearKnownRoute {
             lastAlertTime = .now
             DispatchQueue.main.async {
-                EventProcessor.shared.trigger(
-                    level: .elevated,
+                EventProcessor.shared.requestSafetyConfirmation(
                     reason: "⚠️ Unexpected stop in unfamiliar area for \(Int(stoppedDuration / 60)) min"
                 )
             }

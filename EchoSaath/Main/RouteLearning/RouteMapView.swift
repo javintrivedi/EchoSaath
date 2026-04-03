@@ -28,11 +28,18 @@ struct RouteMapView: View {
                         .stroke(.red, style: StrokeStyle(lineWidth: 4, dash: [8, 4]))
 
                     if let last = tracker.currentRoutePoints.last {
-                        Annotation("", coordinate: last.coordinate) {
-                            Circle()
-                                .fill(.red)
-                                .frame(width: 12, height: 12)
-                                .overlay(Circle().stroke(.white, lineWidth: 2))
+                        Annotation("", coordinate: SensorManager.shared.currentLocation?.coordinate ?? last.coordinate) {
+                            ZStack {
+                                Circle()
+                                    .fill(.red.opacity(0.3))
+                                    .frame(width: 32, height: 32)
+                                
+                                Image(systemName: "location.north.line.fill")
+                                    .foregroundColor(.red)
+                                    .font(.title2)
+                                    .rotationEffect(.degrees(SensorManager.shared.currentHeading?.trueHeading ?? 0))
+                                    .shadow(radius: 2)
+                            }
                         }
                     }
                 }

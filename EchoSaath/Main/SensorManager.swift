@@ -11,6 +11,7 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let motionManager = CMMotionManager()
 
     @Published var currentLocation: CLLocation?
+    @Published var currentHeading: CLHeading?
     @Published var isMonitoring: Bool = false
     @Published var riskLevelString: String = "normal"
 
@@ -44,6 +45,9 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             locationManager.pausesLocationUpdatesAutomatically = false
         }
 
+        if status == .authorizedAlways || status == .authorizedWhenInUse {
+            locationManager.startUpdatingHeading()
+        }
         locationManager.startUpdatingLocation()
         startMotionDetection()
         WidgetDataProvider.shared.updateWidgetData()
@@ -54,6 +58,7 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         isMonitoring = false
 
         locationManager.stopUpdatingLocation()
+        locationManager.stopUpdatingHeading()
         motionManager.stopAccelerometerUpdates()
         WidgetDataProvider.shared.updateWidgetData()
     }
@@ -84,6 +89,10 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         currentLocation = location
         eventPublisher.send(.locationUpdate(location))
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        currentHeading = newHeading
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

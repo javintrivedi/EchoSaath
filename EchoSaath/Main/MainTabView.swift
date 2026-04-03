@@ -41,6 +41,11 @@ struct MainTabView: View {
                 SensorManager.shared.startMonitoring()
             }
         }
+        .overlay {
+            if processor.showSafetyPrompt {
+                SafetyPromptOverlay()
+            }
+        }
     }
 
     private var alertBadgeCount: Int {
