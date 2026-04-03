@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import WidgetKit
 
 public struct TrustedContact: Codable, Hashable, Identifiable {
     public let id: UUID
@@ -51,6 +52,7 @@ final class TrustedContactsStore: ObservableObject {
         do {
             let data = try JSONEncoder().encode(contacts)
             UserDefaults.standard.set(data, forKey: storageKey)
+            WidgetDataProvider.shared.updateWidgetData()
         } catch {
             #if DEBUG
             print("[TrustedContactsStore] Failed to persist contacts: \(error)")

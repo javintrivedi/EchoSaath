@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import WidgetKit
 
 class EventProcessor: ObservableObject {
     static let shared = EventProcessor()
@@ -85,11 +86,15 @@ class EventProcessor: ObservableObject {
                 event: ProcessedEvent(reason: reason, riskLevel: level)
             )
         }
+
+        // Update widget
+        WidgetDataProvider.shared.updateWidgetData()
     }
 
     // MARK: - Resolve Event
     func resolveEvent(id: UUID) {
         recentEvents.removeAll { $0.id == id }
+        WidgetDataProvider.shared.updateWidgetData()
     }
 
     // MARK: - Test Event
@@ -127,6 +132,7 @@ class EventProcessor: ObservableObject {
     func clearAllEvents() {
         recentEvents = []
         UserDefaults.standard.removeObject(forKey: eventsStorageKey)
+        WidgetDataProvider.shared.updateWidgetData()
     }
 }
 

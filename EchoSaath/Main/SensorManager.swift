@@ -2,6 +2,7 @@ import CoreLocation
 import CoreMotion
 import Combine
 import Foundation
+import WidgetKit
 
 class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     static let shared = SensorManager()
@@ -45,6 +46,7 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         locationManager.startUpdatingLocation()
         startMotionDetection()
+        WidgetDataProvider.shared.updateWidgetData()
     }
 
     func stopMonitoring() {
@@ -53,6 +55,7 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         locationManager.stopUpdatingLocation()
         motionManager.stopAccelerometerUpdates()
+        WidgetDataProvider.shared.updateWidgetData()
     }
 
     private func startMotionDetection() {
