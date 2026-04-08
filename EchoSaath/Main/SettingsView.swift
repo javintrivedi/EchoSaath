@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage("enableMonitoring") private var enableMonitoring: Bool = true
     @AppStorage("shakeSensitivity") private var shakeSensitivity: Double = 2.7
     @AppStorage("shakeToAlert") private var shakeToAlert: Bool = true
+    @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @State private var showingResetConfirmation = false
     @State private var showingLogoutConfirmation = false
     @State private var exportURL: URL?
@@ -41,6 +42,15 @@ struct SettingsView: View {
                 
                 NavigationLink(destination: ProfileSetupView()) {
                     Label("Medical & Physical Profile", systemImage: "heart.text.square.fill")
+                }
+            }
+
+            // MARK: - Appearance
+            Section("Appearance") {
+                Picker("Theme", selection: $appTheme) {
+                    ForEach(AppTheme.allCases) { theme in
+                        Text(theme.rawValue).tag(theme)
+                    }
                 }
             }
 

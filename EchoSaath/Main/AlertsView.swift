@@ -9,7 +9,7 @@ struct AlertsView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 1.0, green: 0.94, blue: 0.96).ignoresSafeArea()
+            Color.appBackgroundPink.ignoresSafeArea()
 
             if alerts.isEmpty {
                 emptyState
@@ -117,7 +117,7 @@ struct AlertsView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.white)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 .shadow(color: riskColor(event.riskLevel).opacity(0.1), radius: 8, x: 0, y: 3)
         )
         .overlay(

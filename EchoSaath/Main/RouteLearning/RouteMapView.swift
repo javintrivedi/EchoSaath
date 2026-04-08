@@ -62,7 +62,7 @@ struct RouteMapView: View {
                     } label: {
                         Image(systemName: "location.fill")
                             .padding(10)
-                            .background(.white)
+                            .background(Color(uiColor: .systemBackground))
                             .clipShape(Circle())
                             .shadow(radius: 4)
                     }
@@ -188,7 +188,7 @@ struct RouteMapView: View {
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
         )
     }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @ObservedObject private var authVM = AuthViewModel.shared
 
     var body: some View {
@@ -27,6 +28,7 @@ struct RootView: View {
         .animation(.easeInOut(duration: 0.35), value: hasCompletedOnboarding)
         .animation(.easeInOut(duration: 0.35), value: authVM.isLoggedIn)
         .animation(.easeInOut(duration: 0.35), value: authVM.hasCompletedProfile)
+        .preferredColorScheme(appTheme.colorScheme)
     }
 }
 

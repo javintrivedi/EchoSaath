@@ -36,7 +36,7 @@ struct NotificationLogView: View {
             summaryItem(count: logger.failedCount, label: "Failed", color: .red, icon: "xmark.circle.fill")
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color.white).shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3))
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color(uiColor: .secondarySystemGroupedBackground)).shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3))
     }
 
     private func summaryItem(count: Int, label: String, color: Color, icon: String) -> some View {
@@ -73,7 +73,7 @@ struct NotificationLogView: View {
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white).shadow(color: statusColor(entry.status).opacity(0.08), radius: 6, x: 0, y: 2))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color(uiColor: .secondarySystemGroupedBackground)).shadow(color: statusColor(entry.status).opacity(0.08), radius: 6, x: 0, y: 2))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(statusColor(entry.status).opacity(0.15), lineWidth: 1))
     }
 

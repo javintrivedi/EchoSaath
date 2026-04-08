@@ -103,7 +103,7 @@ struct ProfileSetupView: View {
                             .foregroundColor(.blue)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.white)
+                            .background(Color(uiColor: .systemBackground))
                             .cornerRadius(12)
                             .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
                             .scaleEffect(focusedField == nil ? 1.0 : 0.98)

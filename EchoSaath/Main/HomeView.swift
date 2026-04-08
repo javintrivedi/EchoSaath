@@ -20,7 +20,7 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 1.0, green: 0.94, blue: 0.96)
+            Color.appBackgroundPink
                 .ignoresSafeArea()
 
             ScrollView {
@@ -151,7 +151,7 @@ struct HomeView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
         )
         .onAppear { pulseAnimation = true }
@@ -266,7 +266,7 @@ struct HomeView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .padding(.horizontal, 6)
-        .background(Color.white)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
@@ -286,7 +286,7 @@ struct HomeView: View {
             Spacer()
         }
         .padding(12)
-        .background(Color.white)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
         .cornerRadius(14)
         .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
     }

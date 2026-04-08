@@ -16,7 +16,7 @@ struct TimelineView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 1.0, green: 0.94, blue: 0.96).ignoresSafeArea()
+            Color.appBackgroundPink.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Picker("View", selection: $selectedTab) {
@@ -137,7 +137,7 @@ struct TimelineView: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white)
+                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
                     .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
             )
             .padding(.bottom, 8)
