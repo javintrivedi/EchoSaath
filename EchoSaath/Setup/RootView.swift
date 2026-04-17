@@ -2,12 +2,15 @@ import SwiftUI
 
 struct RootView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("hasSeenWelcomeOnboarding") private var hasSeenWelcomeOnboarding = false
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @ObservedObject private var authVM = AuthViewModel.shared
 
     var body: some View {
         Group {
-            if !hasCompletedOnboarding {
+            if !hasSeenWelcomeOnboarding {
+                WelcomeOnboardingView()
+            } else if !hasCompletedOnboarding {
                 // Step 1: Onboarding flow
                 OnboardingFlowView()
             } else if !authVM.isLoggedIn {

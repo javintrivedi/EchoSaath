@@ -1,33 +1,40 @@
 import Foundation
+import CoreLocation
+import SwiftUI
 
-enum RiskLevel: String, Codable, CaseIterable, Sendable {
+public enum RiskLevel: String, Codable, CaseIterable, Sendable {
     case normal, elevated, critical
-}
-
-struct ProcessedEvent: Identifiable, Codable, Equatable, Sendable {
-    let id: UUID
-    let reason: String
-    let timestamp: Date
-    let riskLevel: RiskLevel
-
-    init(id: UUID = UUID(), reason: String, timestamp: Date = .now, riskLevel: RiskLevel) {
-        self.id = id
-        self.reason = reason
-        self.timestamp = timestamp
-        self.riskLevel = riskLevel
+    
+    public var color: Color {
+        switch self {
+        case .normal: return .green
+        case .elevated: return .orange
+        case .critical: return .red
+        }
     }
 }
 
-struct Event: Identifiable, Equatable {
-    let id: UUID
-    let reason: String
-    let timestamp: Date
-    let riskLevel: RiskLevel
+public struct ProcessedEvent: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let reason: String
+    public let timestamp: Date
+    public let riskLevel: RiskLevel
+    public let latitude: Double?
+    public let longitude: Double?
 
-    init(id: UUID = UUID(), reason: String, timestamp: Date = .now, riskLevel: RiskLevel) {
+    public init(
+        id: UUID = UUID(),
+        reason: String,
+        timestamp: Date = .now,
+        riskLevel: RiskLevel,
+        latitude: Double? = nil,
+        longitude: Double? = nil
+    ) {
         self.id = id
         self.reason = reason
         self.timestamp = timestamp
         self.riskLevel = riskLevel
+        self.latitude = latitude
+        self.longitude = longitude
     }
 }

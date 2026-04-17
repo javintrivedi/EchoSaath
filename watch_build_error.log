@@ -1,0 +1,18 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project EchoSaath.xcodeproj -scheme "EchoSaathWatch Watch App" -destination "platform=watchOS Simulator,name=Apple Watch Series 9 (45mm)" clean build
+
+2026-04-18 02:01:23.804 xcodebuild[10995:275279] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-04-18 02:02:23.918 xcodebuild[10995:275279] Writing error result bundle to /var/folders/3f/46w50cbs7331hh8z3jyqcf340000gn/T/ResultBundle_2026-18-04_02-02-0023.xcresult
+xcodebuild: error: Unable to find a device matching the provided destination specifier:
+		{ platform:watchOS Simulator, OS:latest, name:Apple Watch Series 9 (45mm) }
+
+	The requested device could not be found because no available devices matched the request.
+
+	Available destinations for the "EchoSaathWatch Watch App" scheme:
+		{ platform:watchOS, id:dvtdevice-DVTiOSDevicePlaceholder-watchos:placeholder, name:Any watchOS Device }
+		{ platform:watchOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-watchsimulator:placeholder, name:Any watchOS Simulator Device }
+		{ platform:watchOS Simulator, arch:arm64, id:E26049FD-CAA5-4990-AD15-2299AA9299F8, OS:26.4, name:Apple Watch SE 3 (40mm) }
+		{ platform:watchOS Simulator, arch:arm64, id:988488C0-342E-49D1-A9A1-BB8CF21DC3E5, OS:26.4, name:Apple Watch SE 3 (44mm) }
+		{ platform:watchOS Simulator, arch:arm64, id:77538333-BE2A-451B-BB4D-F312514BEE20, OS:26.4, name:Apple Watch Series 11 (42mm) }
+		{ platform:watchOS Simulator, arch:arm64, id:995585E5-982D-4582-B884-5DE0F9829E34, OS:26.4, name:Apple Watch Series 11 (46mm) }
+		{ platform:watchOS Simulator, arch:arm64, id:7168A0D6-B41F-4436-A1D4-7B5788ACC263, OS:26.4, name:Apple Watch Ultra 3 (49mm) }

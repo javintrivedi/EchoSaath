@@ -40,15 +40,18 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         if status == .notDetermined || status == .authorizedWhenInUse {
             locationManager.requestAlwaysAuthorization()
         }
-        if status == .authorizedAlways {
-            locationManager.allowsBackgroundLocationUpdates = true
-            locationManager.pausesLocationUpdatesAutomatically = false
-        }
-
-        if status == .authorizedAlways || status == .authorizedWhenInUse {
-            locationManager.startUpdatingHeading()
-        }
+        
+        // Optimize for background power
+        locationManager.allowsBackgroundLocationUpdates = true
+        locationManager.pausesLocationUpdatesAutomatically = true
+        locationManager.showsBackgroundLocationIndicator = false
+        
+        // Initial state: Balanced power
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.distanceFilter = 50 // Only update every 50 meters normally
+        
         locationManager.startUpdatingLocation()
+        locationManager.startMonitoringSignificantLocationChanges() // Low power fallback
         startMotionDetection()
         WidgetDataProvider.shared.updateWidgetData()
     }
@@ -58,6 +61,7 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         isMonitoring = false
 
         locationManager.stopUpdatingLocation()
+        locationManager.stopMonitoringSignificantLocationChanges()
         locationManager.stopUpdatingHeading()
         motionManager.stopAccelerometerUpdates()
         WidgetDataProvider.shared.updateWidgetData()
@@ -65,16 +69,34 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     private func startMotionDetection() {
         guard motionManager.isAccelerometerAvailable, !motionManager.isAccelerometerActive else { return }
-        motionManager.accelerometerUpdateInterval = 0.15
+        
+        // Default interval: 0.2s (Efficient)
+        motionManager.accelerometerUpdateInterval = 0.2
         motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
             guard let self, let data else { return }
+            
             let magnitude = sqrt(
                 pow(data.acceleration.x, 2) +
                 pow(data.acceleration.y, 2) +
                 pow(data.acceleration.z, 2)
             )
 
-            // Shake / sudden impact detection with threshold from settings
+            // Dynamic Power Scaling:
+            // If movement is detected, increase GPS accuracy
+            if magnitude > 1.2 {
+                if self.locationManager.desiredAccuracy != kCLLocationAccuracyBest {
+                    self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+                    self.locationManager.distanceFilter = 10
+                }
+            } else {
+                // If stationary for a while, downshift GPS to save battery
+                if self.locationManager.desiredAccuracy != kCLLocationAccuracyHundredMeters {
+                    self.locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+                    self.locationManager.distanceFilter = 50
+                }
+            }
+
+            // Shake / sudden impact detection
             if magnitude > self.shakeThreshold {
                 let now = Date()
                 guard now.timeIntervalSince(self.lastShakeTime) >= self.shakeCooldown else { return }

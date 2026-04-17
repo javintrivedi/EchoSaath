@@ -2,6 +2,7 @@ import UIKit
 import UserNotifications
 import Foundation
 import Combine
+import CoreLocation
 
 class AlertManager: NSObject, ObservableObject {
     static let shared = AlertManager()
@@ -14,8 +15,16 @@ class AlertManager: NSObject, ObservableObject {
         ) { _, _ in }
     }
 
-    func triggerAlert(event: ProcessedEvent) {
+    func triggerAlert(reason: String, location: CLLocation?) {
         lastAlertTime = Date()
+        
+        let event = ProcessedEvent(
+            reason: reason,
+            riskLevel: .critical,
+            latitude: location?.coordinate.latitude,
+            longitude: location?.coordinate.longitude
+        )
+        
         sendLocalNotification(event: event)
         sendSMSToContacts(event: event)
         sendBackendSMS(event: event)

@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ProfileSetupView: View {
     @StateObject private var profileStore = UserProfileStore.shared
@@ -10,6 +11,10 @@ struct ProfileSetupView: View {
     @State private var bloodGroup = "Unknown"
     @State private var address = ""
     @State private var medicalConditions = ""
+    
+    // Image picking
+    @State private var selectedItem: PhotosPickerItem?
+    @State private var profileImageData: Data?
     
     let genders = ["Male", "Female", "Non-Binary", "Prefer not to say"]
     let bloodGroups = ["Unknown", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
@@ -23,29 +28,50 @@ struct ProfileSetupView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            LinearGradient(
-                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.8)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color.appBackgroundPink
+                .ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 24) {
                     
-                    VStack(spacing: 8) {
-                        Image(systemName: "heart.text.square.fill")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.white)
+                    VStack(spacing: 12) {
+                        // Profile Image Picker
+                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                            if let data = profileImageData, let uiImage = UIImage(data: data) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 100, height: 100)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.pink.opacity(0.3), lineWidth: 2))
+                                    .shadow(radius: 5)
+                            } else {
+                                ZStack {
+                                    Circle()
+                                        .fill(LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                        .frame(width: 100, height: 100)
+                                    
+                                    Image(systemName: "camera.fill")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                        }
+                        .onChange(of: selectedItem) { _, newItem in
+                            Task {
+                                if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                                    profileImageData = data
+                                }
+                            }
+                        }
                         
                         Text("Medical Profile")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                         
                         Text("This vital information is securely stored locally and used only during emergencies to assist responders.")
-                            .font(.body)
-                            .foregroundStyle(.white.opacity(0.9))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     }
@@ -53,8 +79,6 @@ struct ProfileSetupView: View {
                     
                     // Form Fields
                     VStack(spacing: 16) {
-                        
-                        // Basic Info
                         HStack(spacing: 16) {
                             GlassTextField(title: "Age", text: $age, icon: "calendar")
                                 .keyboardType(.numberPad)
@@ -78,35 +102,38 @@ struct ProfileSetupView: View {
                         GlassTextField(title: "Home Address", text: $address, icon: "house.fill")
                             .focused($focusedField, equals: .address)
                         
-                        // Medical Conditions
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Pre-existing Medical Conditions (Optional)")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.9))
+                                .font(.subheadline.bold())
+                                .foregroundColor(.primary)
                             
                             TextField("Asthma, Diabetes, Allergies...", text: $medicalConditions, axis: .vertical)
                                 .lineLimit(3...5)
                                 .padding()
-                                .background(.ultraThinMaterial)
+                                .background(Color(.secondarySystemGroupedBackground).opacity(0.8))
                                 .cornerRadius(12)
                                 .focused($focusedField, equals: .medicalConditions)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(.separator).opacity(0.5), lineWidth: 0.5)
+                                )
                         }
                     }
                     .padding(.horizontal)
                     
-                    // Submit Button
                     Button {
                         submitProfile()
                     } label: {
                         Text(AuthViewModel.shared.hasCompletedProfile ? "Save Changes" : "Complete Setup")
                             .font(.headline)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color(uiColor: .systemBackground))
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
-                            .scaleEffect(focusedField == nil ? 1.0 : 0.98)
+                            .background(
+                                LinearGradient(colors: [.pink, .purple], startPoint: .leading, endPoint: .trailing)
+                            )
+                            .cornerRadius(14)
+                            .shadow(color: Color.pink.opacity(0.2), radius: 10, y: 5)
                     }
                     .padding(.horizontal)
                     .padding(.top, 16)
@@ -120,6 +147,7 @@ struct ProfileSetupView: View {
         .onAppear {
             loadExistingProfile()
         }
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     private func loadExistingProfile() {
@@ -131,10 +159,10 @@ struct ProfileSetupView: View {
         bloodGroup = saved.bloodGroup.isEmpty ? "Unknown" : saved.bloodGroup
         address = saved.address
         medicalConditions = saved.medicalConditions
+        profileImageData = saved.profileImageData
     }
     
     private func submitProfile() {
-        // Save to store
         let newProfile = UserProfile(
             age: age,
             gender: gender,
@@ -142,11 +170,11 @@ struct ProfileSetupView: View {
             weight: weight,
             bloodGroup: bloodGroup,
             address: address,
-            medicalConditions: medicalConditions
+            medicalConditions: medicalConditions,
+            profileImageData: profileImageData
         )
         profileStore.updateProfile(newProfile)
         
-        // Mark Auth state as completed
         withAnimation {
             AuthViewModel.shared.markProfileCompleted()
         }
@@ -163,14 +191,18 @@ struct GlassTextField: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
                 .frame(width: 24)
-            TextField("", text: $text, prompt: Text(title).foregroundColor(.white.opacity(0.5)))
-                .foregroundColor(.white)
+            TextField("", text: $text, prompt: Text(title).foregroundColor(.secondary.opacity(0.6)))
+                .foregroundColor(.primary)
         }
         .padding()
-        .background(.ultraThinMaterial)
+        .background(Color(.secondarySystemGroupedBackground).opacity(0.8))
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.separator).opacity(0.5), lineWidth: 0.5)
+        )
     }
 }
 
@@ -183,7 +215,7 @@ struct GlassPickerField: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
                 .frame(width: 24)
             
             Picker(title, selection: $selection) {
@@ -192,16 +224,16 @@ struct GlassPickerField: View {
                 }
             }
             .pickerStyle(.menu)
-            .tint(.white)
+            .tint(.primary)
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(.ultraThinMaterial)
+        .background(Color(.secondarySystemGroupedBackground).opacity(0.8))
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.separator).opacity(0.5), lineWidth: 0.5)
+        )
     }
-}
-
-#Preview {
-    ProfileSetupView()
 }

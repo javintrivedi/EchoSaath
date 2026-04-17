@@ -1,198 +1,194 @@
 import Foundation
 import Combine
-import WidgetKit
-import UserNotifications
+import CoreLocation
+import UIKit
 
 class EventProcessor: ObservableObject {
     static let shared = EventProcessor()
 
     @Published var currentRisk: RiskLevel = .normal
-    @Published var recentEvents: [Event] = [] {
+    @Published var currentRiskScore: Double = 0 // 0 to 100
+    @Published var isAlerting = false 
+    @Published var isCountingDown = false
+    @Published var recentEvents: [ProcessedEvent] = [] {
         didSet { persistEvents() }
     }
+    
+    private var pendingReason: String = ""
+    private let storageKey = "echosaath_events"
 
-    // MARK: - Safety Prompt State
     @Published var showSafetyPrompt: Bool = false
-    @Published var pendingSafetyReason: String? = nil
-    private var safetyPromptTimeout: Timer?
-
-
+    
     private var cancellables = Set<AnyCancellable>()
-    private var hasSubscribed = false
-    private let eventsStorageKey = "echosaath_events"
-
+    
     private init() {
         loadEvents()
-        setupSensorSubscription()
-        setupShakeSubscription()
-        // Start route learning system
-        RouteTracker.shared.startListening()
+        subscribeToSensors()
+        _ = WatchConnectivityManager.shared // Initialize watch link
     }
 
-    // MARK: - Sensor Subscription
-    private func setupSensorSubscription() {
-        guard !hasSubscribed else { return }
-        hasSubscribed = true
-
+    private func subscribeToSensors() {
         SensorManager.shared.eventPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] sensorEvent in
-                self?.handle(sensorEvent)
+            .sink { [weak self] event in
+                self?.handleSensorEvent(event)
             }
             .store(in: &cancellables)
     }
 
-    // MARK: - Shake Gesture Subscription (from ShakeDetectingWindow)
-    private func setupShakeSubscription() {
-        NotificationCenter.default.publisher(for: ShakeDetectingWindow.shakeNotification)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.triggerShakeAlert()
-            }
-            .store(in: &cancellables)
-    }
-
-    private func triggerShakeAlert() {
-        trigger(level: .critical, reason: "🚨 Shake SOS triggered!")
-    }
-
-    private func handle(_ sensorEvent: SensorEvent) {
-        switch sensorEvent {
+    private func handleSensorEvent(_ event: SensorEvent) {
+        switch event {
         case .suddenMotion(let magnitude):
-            if magnitude > 3.5 {
-                trigger(level: .critical, reason: "Fall detected (magnitude: \(String(format: "%.1f", magnitude)))")
-            } else {
-                trigger(level: .elevated, reason: "Sudden motion detected (magnitude: \(String(format: "%.1f", magnitude)))")
-            }
-        case .locationUpdate(let location):
-            // Forward to route learning system
-            RouteTracker.shared.processLocation(location)
+            evaluateAndTrigger(magnitude: magnitude)
+        case .locationUpdate:
+            // Could trigger re-evaluation of route risk
+            break
         case .deviceStationary(let duration):
-            if duration > 300 {
-                trigger(level: .elevated, reason: "Device inactive for \(Int(duration / 60)) minutes")
+            evaluateAndTrigger(duration: duration)
+        }
+    }
+
+    func evaluateAndTrigger(magnitude: Double? = nil, duration: TimeInterval? = nil) {
+        var score: Double = 0
+        var alertComponents: [String] = []
+        
+        // 1. G-Force Impact (0-50+ pts)
+        if let mag = magnitude {
+            let shakeEnabled = UserDefaults.standard.object(forKey: "shakeToAlert") as? Bool ?? true
+            guard shakeEnabled else { return }
+            
+            if mag > 3.5 { 
+                score += 100 // Immediate trigger
+                alertComponents.append("Sudden shake/impact")
+            } else if mag > 2.5 { 
+                score += 60 // Threshold for critical
+                alertComponents.append("Significant motion")
             }
         }
+        
+        // 2. Inactivity/Stasis (0-40 pts)
+        if let dur = duration {
+            if dur > 30 { 
+                score += 40
+                alertComponents.append("Extended inactivity")
+            } else if dur > 15 { 
+                score += 20
+                alertComponents.append("Brief inactivity")
+            }
+        }
+        
+        // 3. Route Deviation (Contextual Multiplier)
+        if RouteRiskDetector.shared.isDeviating {
+            score *= 1.5
+            alertComponents.append("Off-route deviation")
+        }
+
+        // 4. Update Published Score
+        self.currentRiskScore = min(100, score)
+
+        let reason = alertComponents.isEmpty ? "Unusual activity detected" : alertComponents.joined(separator: ", ")
+        
+        if score >= 60 {
+            trigger(level: .critical, reason: reason)
+        } else if score >= 30 {
+            currentRisk = .elevated
+        } else {
+            currentRisk = .normal
+        }
     }
 
-    // MARK: - Trigger Event
     func trigger(level: RiskLevel, reason: String) {
-        let newEvent = Event(reason: reason, riskLevel: level)
-        recentEvents.insert(newEvent, at: 0)
-
-        // Keep max 200 events
-        if recentEvents.count > 200 {
-            recentEvents = Array(recentEvents.prefix(200))
-        }
-
-        // Update current risk
-        currentRisk = level
-
-        // If critical, send alert
-        if level == .critical {
-            AlertManager.shared.triggerAlert(
-                event: ProcessedEvent(reason: reason, riskLevel: level)
+        guard level == .critical else { 
+            let event = ProcessedEvent(
+                reason: reason, 
+                riskLevel: level, 
+                latitude: SensorManager.shared.currentLocation?.coordinate.latitude,
+                longitude: SensorManager.shared.currentLocation?.coordinate.longitude
             )
+            DispatchQueue.main.async {
+                self.recentEvents.insert(event, at: 0)
+                self.currentRisk = level
+            }
+            return 
         }
-
-        // Update widget
-        WidgetDataProvider.shared.updateWidgetData()
+        
+        if isCountingDown { return }
+        
+        self.pendingReason = reason
+        DispatchQueue.main.async {
+            self.isCountingDown = true
+            self.isAlerting = true
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+    }
+    
+    func finalizeAlert() {
+        let event = ProcessedEvent(
+            reason: pendingReason, 
+            riskLevel: .critical,
+            latitude: SensorManager.shared.currentLocation?.coordinate.latitude,
+            longitude: SensorManager.shared.currentLocation?.coordinate.longitude
+        )
+        
+        DispatchQueue.main.async {
+            self.recentEvents.insert(event, at: 0)
+            self.isCountingDown = false
+            self.isAlerting = false
+            self.currentRisk = .critical
+            
+            // Trigger actual alert manager
+            AlertManager.shared.triggerAlert(reason: self.pendingReason, location: SensorManager.shared.currentLocation)
+        }
+    }
+    
+    func cancelCountdown() {
+        DispatchQueue.main.async {
+            self.isCountingDown = false
+            self.isAlerting = false
+            self.currentRisk = .normal
+            self.currentRiskScore = 0
+        }
     }
 
-    // MARK: - Resolve Event
-    func resolveEvent(id: UUID) {
-        recentEvents.removeAll { $0.id == id }
-        WidgetDataProvider.shared.updateWidgetData()
-    }
-
-    // MARK: - Test Event
-    func addTestEvent() {
-        let testReasons = [
-            "Test event - normal activity",
-            "Test event - elevated risk",
-            "Test event - critical alert"
-        ]
-        let levels: [RiskLevel] = [.normal, .elevated, .critical]
-        let reason = testReasons.randomElement()!
-        let level = levels.randomElement()!
-        trigger(level: level, reason: reason)
-    }
-
-    // MARK: - Manual SOS
     func triggerManualSOS() {
-        trigger(level: .critical, reason: "🆘 Manual SOS activated!")
+        trigger(level: .critical, reason: "Manual SOS button pressed")
     }
 
-    // MARK: - Safety Prompt
     func requestSafetyConfirmation(reason: String) {
-        pendingSafetyReason = reason
-        showSafetyPrompt = true
-        
-        // Notify user via local notification so they open the app
-        let content = UNMutableNotificationContent()
-        content.title = "Route Change Detected"
-        content.body = "Is this your safe path? Open app to verify."
-        content.sound = .default
-        
-        let req = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(req)
-
-        safetyPromptTimeout?.invalidate()
-        safetyPromptTimeout = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false) { [weak self] _ in
-            self?.resolveSafetyPrompt(isSafe: false) // timeout triggers SMS
+        self.pendingReason = reason
+        DispatchQueue.main.async {
+            self.showSafetyPrompt = true
         }
     }
 
     func resolveSafetyPrompt(isSafe: Bool) {
-        guard showSafetyPrompt else { return }
-        
-        safetyPromptTimeout?.invalidate()
-        showSafetyPrompt = false
-
-        if isSafe {
-            trigger(level: .normal, reason: "✅ Marked new route as safe")
-        } else {
-            let reason = pendingSafetyReason ?? "⚠️ Route deviation — User unconfirmed/unsafe"
-            trigger(level: .critical, reason: reason)
-        }
-        pendingSafetyReason = nil
-    }
-
-    // MARK: - Persistence
-    private func persistEvents() {
-        let codableEvents = recentEvents.map { CodableEvent(from: $0) }
-        if let data = try? JSONEncoder().encode(codableEvents) {
-            UserDefaults.standard.set(data, forKey: eventsStorageKey)
+        DispatchQueue.main.async {
+            self.showSafetyPrompt = false
+            if !isSafe {
+                self.trigger(level: .critical, reason: "User reported unsafe situation during route deviation")
+            }
         }
     }
 
-    private func loadEvents() {
-        guard let data = UserDefaults.standard.data(forKey: eventsStorageKey),
-              let codableEvents = try? JSONDecoder().decode([CodableEvent].self, from: data) else { return }
-        recentEvents = codableEvents.map { $0.toEvent() }
+    func addTestEvent() {
+        trigger(level: .critical, reason: "Manual Test Trigger")
     }
 
     func clearAllEvents() {
         recentEvents = []
-        UserDefaults.standard.removeObject(forKey: eventsStorageKey)
-        WidgetDataProvider.shared.updateWidgetData()
-    }
-}
-
-// MARK: - Codable wrapper for Event persistence
-private struct CodableEvent: Codable {
-    let id: UUID
-    let reason: String
-    let timestamp: Date
-    let riskLevel: RiskLevel
-
-    init(from event: Event) {
-        self.id = event.id
-        self.reason = event.reason
-        self.timestamp = event.timestamp
-        self.riskLevel = event.riskLevel
+        currentRisk = .normal
+        currentRiskScore = 0
     }
 
-    func toEvent() -> Event {
-        Event(id: id, reason: reason, timestamp: timestamp, riskLevel: riskLevel)
+    private func persistEvents() {
+        if let data = try? JSONEncoder().encode(recentEvents) {
+            UserDefaults.standard.set(data, forKey: storageKey)
+        }
+    }
+
+    private func loadEvents() {
+        if let data = UserDefaults.standard.data(forKey: storageKey),
+           let decoded = try? JSONDecoder().decode([ProcessedEvent].self, from: data) {
+            self.recentEvents = decoded
+        }
     }
 }

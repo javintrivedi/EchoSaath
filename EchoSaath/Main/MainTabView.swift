@@ -13,19 +13,12 @@ struct MainTabView: View {
             }
 
             NavigationStack {
-                AlertsView()
+                SecurityHistoryView()
             }
             .tabItem {
-                Label("Alerts", systemImage: "bell.fill")
+                Label("History", systemImage: "clock.badge.exclamationmark.fill")
             }
             .badge(alertBadgeCount)
-
-            NavigationStack {
-                TimelineView()
-            }
-            .tabItem {
-                Label("Timeline", systemImage: "clock.fill")
-            }
 
             NavigationStack {
                 SettingsView()
@@ -41,9 +34,13 @@ struct MainTabView: View {
                 SensorManager.shared.startMonitoring()
             }
         }
+        .fullScreenCover(isPresented: $processor.isCountingDown) {
+            EmergencyCountdownView()
+        }
         .overlay {
             if processor.showSafetyPrompt {
                 SafetyPromptOverlay()
+                    .zIndex(90)
             }
         }
     }

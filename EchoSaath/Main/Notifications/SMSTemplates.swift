@@ -25,20 +25,9 @@ enum SMSTemplates {
     }
 
     static func buildPreviewMessage(userName: String, alertType: AlertType, location: CLLocation?, timestamp: Date = .now) -> String {
-        let locationText = location.map { googleMapsLink(from: $0) } ?? "Location unavailable"
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .short
-        let timeStr = formatter.string(from: timestamp)
-
-        return """
-        🚨 ECHOSAATH ALERT
-        \(alertType == .sos ? "🆘 SOS TRIGGERED" : "⚠️ \(alertType.rawValue.uppercased())")
-        \(userName) may need help.
-        📍 Location: \(locationText)
-        🕐 Time: \(timeStr)
-        Please check on them immediately.
-        — EchoSaath Safety App
-        """
+        let loc = location.map { googleMapsLink(from: $0) } ?? "Loc unavailable"
+        let timeStr = timestamp.formatted(.dateTime.hour().minute())
+        
+        return "🚨EchoSaath \(alertType.rawValue): \(userName) needs help!\n📍:\(loc)\n🕐:\(timeStr)"
     }
 }

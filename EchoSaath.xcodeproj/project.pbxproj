@@ -7,12 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		367917C22F92CE6000C1CC95 /* EchoSaathWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 367917B82F92CE5F00C1CC95 /* EchoSaathWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		36F10EBD2F7F932C007905C3 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36F10EBC2F7F932B007905C3 /* WidgetKit.framework */; };
 		36F10EBF2F7F932C007905C3 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36F10EBE2F7F932C007905C3 /* SwiftUI.framework */; };
 		36F10ED02F7F932C007905C3 /* EchoSaathWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 36F10EBA2F7F932B007905C3 /* EchoSaathWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		367917C02F92CE6000C1CC95 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 36A9CB872F61621C00CC3F14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 367917B72F92CE5F00C1CC95;
+			remoteInfo = "EchoSaathWatch Watch App";
+		};
 		36F10ECE2F7F932C007905C3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 36A9CB872F61621C00CC3F14 /* Project object */;
@@ -23,6 +31,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		367917C62F92CE6000C1CC95 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				367917C22F92CE6000C1CC95 /* EchoSaathWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		36F10ED52F7F932C007905C3 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -37,6 +56,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		367917B82F92CE5F00C1CC95 /* EchoSaathWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "EchoSaathWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		36A9CB8F2F61621C00CC3F14 /* EchoSaath.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EchoSaath.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36F10EBA2F7F932B007905C3 /* EchoSaathWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = EchoSaathWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		36F10EBC2F7F932B007905C3 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -62,6 +82,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		367917B92F92CE5F00C1CC95 /* EchoSaathWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "EchoSaathWatch Watch App";
+			sourceTree = "<group>";
+		};
 		36DF91812F7414ED00847700 /* EchoSaath */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -81,6 +106,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		367917B52F92CE5F00C1CC95 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		36A9CB8C2F61621C00CC3F14 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -106,6 +138,7 @@
 				36F10ED72F7F96C0007905C3 /* EchoSaathWidgetExtension.entitlements */,
 				36DF91812F7414ED00847700 /* EchoSaath */,
 				36F10EC02F7F932C007905C3 /* EchoSaathWidget */,
+				367917B92F92CE5F00C1CC95 /* EchoSaathWatch Watch App */,
 				36F10EBB2F7F932B007905C3 /* Frameworks */,
 				36A9CB902F61621C00CC3F14 /* Products */,
 			);
@@ -116,6 +149,7 @@
 			children = (
 				36A9CB8F2F61621C00CC3F14 /* EchoSaath.app */,
 				36F10EBA2F7F932B007905C3 /* EchoSaathWidgetExtension.appex */,
+				367917B82F92CE5F00C1CC95 /* EchoSaathWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -132,6 +166,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		367917B72F92CE5F00C1CC95 /* EchoSaathWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 367917C32F92CE6000C1CC95 /* Build configuration list for PBXNativeTarget "EchoSaathWatch Watch App" */;
+			buildPhases = (
+				367917B42F92CE5F00C1CC95 /* Sources */,
+				367917B52F92CE5F00C1CC95 /* Frameworks */,
+				367917B62F92CE5F00C1CC95 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				367917B92F92CE5F00C1CC95 /* EchoSaathWatch Watch App */,
+			);
+			name = "EchoSaathWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "EchoSaathWatch Watch App";
+			productReference = 367917B82F92CE5F00C1CC95 /* EchoSaathWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		36A9CB8E2F61621C00CC3F14 /* EchoSaath */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 36A9CB9F2F61621D00CC3F14 /* Build configuration list for PBXNativeTarget "EchoSaath" */;
@@ -140,11 +196,13 @@
 				36A9CB8C2F61621C00CC3F14 /* Frameworks */,
 				36A9CB8D2F61621C00CC3F14 /* Resources */,
 				36F10ED52F7F932C007905C3 /* Embed Foundation Extensions */,
+				367917C62F92CE6000C1CC95 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				36F10ECF2F7F932C007905C3 /* PBXTargetDependency */,
+				367917C12F92CE6000C1CC95 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				36DF91812F7414ED00847700 /* EchoSaath */,
@@ -188,6 +246,9 @@
 				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
+					367917B72F92CE5F00C1CC95 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
 					36A9CB8E2F61621C00CC3F14 = {
 						CreatedOnToolsVersion = 26.3;
 					};
@@ -212,11 +273,19 @@
 			targets = (
 				36A9CB8E2F61621C00CC3F14 /* EchoSaath */,
 				36F10EB92F7F932B007905C3 /* EchoSaathWidgetExtension */,
+				367917B72F92CE5F00C1CC95 /* EchoSaathWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		367917B62F92CE5F00C1CC95 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		36A9CB8D2F61621C00CC3F14 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -234,6 +303,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		367917B42F92CE5F00C1CC95 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		36A9CB8B2F61621C00CC3F14 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -251,6 +327,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		367917C12F92CE6000C1CC95 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 367917B72F92CE5F00C1CC95 /* EchoSaathWatch Watch App */;
+			targetProxy = 367917C02F92CE6000C1CC95 /* PBXContainerItemProxy */;
+		};
 		36F10ECF2F7F932C007905C3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 36F10EB92F7F932B007905C3 /* EchoSaathWidgetExtension */;
@@ -259,6 +340,72 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		367917C42F92CE6000C1CC95 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2PJR2359N2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = EchoSaathWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = jt.EchoSaath;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = jt.EchoSaath.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.4;
+			};
+			name = Debug;
+		};
+		367917C52F92CE6000C1CC95 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2PJR2359N2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = EchoSaathWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = jt.EchoSaath;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = jt.EchoSaath.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.4;
+			};
+			name = Release;
+		};
 		36A9CB9D2F61621D00CC3F14 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -393,7 +540,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2PJR2359N2;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EchoSaath/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -427,7 +575,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2PJR2359N2;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EchoSaath/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -517,6 +666,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		367917C32F92CE6000C1CC95 /* Build configuration list for PBXNativeTarget "EchoSaathWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				367917C42F92CE6000C1CC95 /* Debug */,
+				367917C52F92CE6000C1CC95 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		36A9CB8A2F61621C00CC3F14 /* Build configuration list for PBXProject "EchoSaath" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

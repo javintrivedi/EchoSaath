@@ -1,14 +1,17 @@
 import Foundation
 import CoreLocation
+import Combine
 
 // MARK: - Route Risk Detector
-final class RouteRiskDetector {
+final class RouteRiskDetector: ObservableObject {
     static let shared = RouteRiskDetector()
 
     private let deviationThreshold: Double = 300 // meters
     private let unexpectedStopDuration: TimeInterval = 300 // 5 min
     private var lastAlertTime: Date = .distantPast
     private let alertCooldown: TimeInterval = 120 // 2 min between alerts
+    
+    @Published var isDeviating = false // Track current deviation state
 
     private var isLearningPhase: Bool {
         let key = "learningPhaseStartDate"
@@ -24,6 +27,24 @@ final class RouteRiskDetector {
         // 10-day learning phase
         let daysPassed = Calendar.current.dateComponents([.day], from: startDate, to: Date()).day ?? 0
         return daysPassed < 10
+    }
+    
+    var isLearning: Bool { isLearningPhase }
+    
+    var learningProgress: String {
+        let key = "learningPhaseStartDate"
+        let defaults = UserDefaults.standard
+        let startDate = (defaults.object(forKey: key) as? Date) ?? Date()
+        let daysPassed = Calendar.current.dateComponents([.day], from: startDate, to: Date()).day ?? 0
+        if daysPassed >= 10 {
+            return "Fully Personalized"
+        } else {
+            return "Day \(daysPassed + 1)/10"
+        }
+    }
+    
+    var knownRoutesCount: Int {
+        RouteStore.shared.loadClusters().count
     }
 
     private init() {}
@@ -45,8 +66,13 @@ final class RouteRiskDetector {
                 minDeviation = distance
             }
         }
+        
+        if minDeviation <= deviationThreshold {
+            self.isDeviating = false
+        }
 
         if minDeviation > deviationThreshold {
+            self.isDeviating = true
             lastAlertTime = .now
             DispatchQueue.main.async {
                 EventProcessor.shared.requestSafetyConfirmation(

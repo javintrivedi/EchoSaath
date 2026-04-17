@@ -11,6 +11,7 @@ public struct UserProfile: Codable, Equatable {
     var bloodGroup: String
     var address: String
     var medicalConditions: String
+    var profileImageData: Data? // Added for profile picture
     
     public init(
         age: String = "",
@@ -19,7 +20,8 @@ public struct UserProfile: Codable, Equatable {
         weight: String = "",
         bloodGroup: String = "",
         address: String = "",
-        medicalConditions: String = ""
+        medicalConditions: String = "",
+        profileImageData: Data? = nil
     ) {
         self.age = age
         self.gender = gender
@@ -28,6 +30,7 @@ public struct UserProfile: Codable, Equatable {
         self.bloodGroup = bloodGroup
         self.address = address
         self.medicalConditions = medicalConditions
+        self.profileImageData = profileImageData
     }
 }
 

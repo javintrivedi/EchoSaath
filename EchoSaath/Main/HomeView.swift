@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct HomeView: View {
     @EnvironmentObject var processor: EventProcessor
@@ -37,16 +38,25 @@ struct HomeView: View {
                         }
                         Spacer()
                         // Profile avatar
-                        Circle()
-                            .fill(
-                                LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
-                            )
-                            .frame(width: 44, height: 44)
-                            .overlay(
-                                Text(String(authVM.currentUserName.prefix(1)).uppercased())
-                                    .font(.headline.bold())
-                                    .foregroundStyle(.white)
-                            )
+                        if let data = UserProfileStore.shared.profile.profileImageData, let uiImage = UIImage(data: data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 44, height: 44)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                        } else {
+                            Circle()
+                                .fill(
+                                    LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                )
+                                .frame(width: 44, height: 44)
+                                .overlay(
+                                    Text(String(authVM.currentUserName.prefix(1)).uppercased())
+                                        .font(.headline.bold())
+                                        .foregroundStyle(.white)
+                                )
+                        }
                     }
                     .padding(.horizontal)
 
@@ -95,10 +105,10 @@ struct HomeView: View {
                                 color: .green
                             )
                             quickActionCard(
-                                icon: "waveform",
-                                title: "Monitoring",
-                                subtitle: sensorManager.isMonitoring ? "Active" : "Paused",
-                                color: sensorManager.isMonitoring ? .green : .gray
+                                icon: "brain.head.profile",
+                                title: "Route Learning",
+                                subtitle: RouteRiskDetector.shared.learningProgress,
+                                color: .purple
                             )
                         }
                         .padding(.horizontal)
@@ -138,14 +148,42 @@ struct HomeView: View {
                     .foregroundColor(sensorManager.isMonitoring ? .green : .red)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(sensorManager.isMonitoring ? "Protection Active" : "Protection Paused")
-                    .font(.title3.bold())
-                    .foregroundStyle(sensorManager.isMonitoring ? .green : .red)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Security Status")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.secondary)
+                        Text(processor.currentRisk == .normal ? "System Secured" : "Risk Detected")
+                            .font(.title2.bold())
+                            .foregroundColor(processor.currentRisk.color)
+                    }
+                    Spacer()
+                    
+                    // Risk Gauge
+                    ZStack {
+                        Circle()
+                            .stroke(Color.gray.opacity(0.1), lineWidth: 4)
+                        Circle()
+                            .trim(from: 0, to: processor.currentRiskScore / 100.0)
+                            .stroke(
+                                processor.currentRisk.color,
+                                style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                            )
+                            .rotationEffect(.degrees(-90))
+                        
+                        Text("\(Int(processor.currentRiskScore))%")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(processor.currentRisk.color)
+                    }
+                    .frame(width: 44, height: 44)
+                    .animation(.spring(), value: processor.currentRiskScore)
+                }
+                
                 Text(sensorManager.isMonitoring
                      ? "Background monitoring is running silently."
                      : "Enable monitoring in Settings to stay protected.")
-                    .font(.caption)
+                    .font(.footnote)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
             }
@@ -283,12 +321,19 @@ struct HomeView: View {
                 .background(color.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.subheadline.bold())
-                Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                Text(title)
+                    .font(.subheadline.bold())
+                    .lineLimit(1)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
-            Spacer()
+            Spacer(minLength: 0)
         }
         .padding(12)
+        .frame(maxWidth: .infinity)
+        .frame(height: 64) // Fixed height to ensure symmetry
         .background(Color(uiColor: .secondarySystemGroupedBackground))
         .cornerRadius(14)
         .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
@@ -346,17 +391,21 @@ struct HomeView: View {
                     Text(title)
                         .font(.subheadline.bold())
                         .foregroundColor(.primary)
+                        .lineLimit(1)
                     Text(subtitle)
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
-                Spacer()
+                Spacer(minLength: 0)
             }
             .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(uiColor: .secondarySystemGroupedBackground))
             .cornerRadius(14)
             .shadow(color: color.opacity(0.1), radius: 4, x: 0, y: 2)
         }
+        .frame(maxWidth: .infinity)
     }
 
     private func callPolice() {

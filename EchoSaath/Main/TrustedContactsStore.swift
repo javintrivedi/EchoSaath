@@ -4,8 +4,8 @@ import WidgetKit
 
 public struct TrustedContact: Codable, Hashable, Identifiable {
     public let id: UUID
-    var name: String
-    var phoneNumber: String
+    public let name: String
+    public let phoneNumber: String
 
     public init(id: UUID = UUID(), name: String, phoneNumber: String) {
         self.id = id

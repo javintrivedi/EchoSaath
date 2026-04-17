@@ -3,17 +3,13 @@ import CoreLocation
 import AVFoundation
 
 struct MonitoringSetupView: View {
+    @StateObject private var viewModel = MonitoringSetupViewModel()
 
-    @State private var locationStatus: CLAuthorizationStatus = .notDetermined
-    @State private var micAuthorized: AVAudioSession.RecordPermission = AVAudioSession.RecordPermission.undetermined
-    @State private var cameraAuthorized: AVAuthorizationStatus = .notDetermined
-    @State private var backgroundRefreshEnabled: Bool = UIApplication.shared.backgroundRefreshStatus == .available
-
-    private let locationDelegate = LocationDelegate()
-    private let locationManager = CLLocationManager()
-
-    init() {
-        locationManager.delegate = locationDelegate
+    private var allPermissionsGranted: Bool {
+        let loc = viewModel.locationStatus == .authorizedAlways || viewModel.locationStatus == .authorizedWhenInUse
+        let mic = viewModel.micAuthorized == .granted
+        let cam = viewModel.cameraAuthorized == .authorized
+        return loc && mic && cam && viewModel.backgroundRefreshEnabled
     }
 
     var body: some View {
@@ -55,20 +51,20 @@ struct MonitoringSetupView: View {
                 )
 
                 VStack(spacing: 12) {
-                    MonitoringCard(title: "Location", icon: "location.fill", status: readableLocationStatus(locationStatus)) {
-                        requestLocationPermission()
+                    MonitoringCard(title: "Location", icon: "location.fill", status: readableLocationStatus(viewModel.locationStatus)) {
+                        viewModel.requestLocationPermission()
                     }
 
-                    MonitoringCard(title: "Microphone", icon: "mic.fill", status: readableMicStatus(micAuthorized)) {
-                        requestMicrophonePermission()
+                    MonitoringCard(title: "Microphone", icon: "mic.fill", status: readableMicStatus(viewModel.micAuthorized)) {
+                        viewModel.requestMicrophonePermission()
                     }
 
-                    MonitoringCard(title: "Camera", icon: "video.fill", status: readableCameraStatus(cameraAuthorized)) {
-                        requestCameraPermission()
+                    MonitoringCard(title: "Camera", icon: "video.fill", status: readableCameraStatus(viewModel.cameraAuthorized)) {
+                        viewModel.requestCameraPermission()
                     }
 
-                    MonitoringCard(title: "Background Refresh", icon: "bolt.fill", status: backgroundRefreshEnabled ? "Enabled" : "Disabled") {
-                        openAppSettings()
+                    MonitoringCard(title: "Background Refresh", icon: "bolt.fill", status: viewModel.backgroundRefreshEnabled ? "Enabled" : "Disabled") {
+                        viewModel.openAppSettings()
                     }
                 }
 
@@ -76,65 +72,29 @@ struct MonitoringSetupView: View {
 
                 NavigationLink(destination: TrustedContactsView(isOnboarding: true)) {
                     HStack(spacing: 8) {
-                        Text("Continue")
+                        Text(allPermissionsGranted ? "All Set! Continue" : "Enable All to Continue")
                             .fontWeight(.semibold)
-                        Image(systemName: "chevron.right")
+                        Image(systemName: allPermissionsGranted ? "checkmark.circle.fill" : "lock.fill")
                             .font(.headline)
                     }
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(
-                        LinearGradient(colors: [.pink, .purple], startPoint: .leading, endPoint: .trailing)
+                        allPermissionsGranted
+                        ? LinearGradient(colors: [.green, .blue], startPoint: .leading, endPoint: .trailing)
+                        : LinearGradient(colors: [.gray, .secondary], startPoint: .leading, endPoint: .trailing)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .shadow(color: .pink.opacity(0.25), radius: 10, x: 0, y: 8)
+                    .shadow(color: (allPermissionsGranted ? Color.green : Color.gray).opacity(0.25), radius: 10, x: 0, y: 8)
                 }
+                .disabled(!allPermissionsGranted)
                 .padding(.horizontal)
             }
             .padding()
         }
-        .onAppear(perform: refreshStatuses)
+        .onAppear { viewModel.refreshStatuses() }
         .navigationTitle("Setup Monitoring")
-    }
-
-    // MARK: - Permission Logic
-    private func refreshStatuses() {
-        locationStatus = locationManager.authorizationStatus
-        micAuthorized = AVAudioSession.sharedInstance().recordPermission
-        cameraAuthorized = AVCaptureDevice.authorizationStatus(for: .video)
-        backgroundRefreshEnabled = UIApplication.shared.backgroundRefreshStatus == .available
-    }
-
-    private func requestLocationPermission() {
-        switch locationManager.authorizationStatus {
-        case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-        case .authorizedWhenInUse:
-            locationManager.requestAlwaysAuthorization()
-        default:
-            openAppSettings()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { refreshStatuses() }
-    }
-
-    private func requestMicrophonePermission() {
-        AVAudioSession.sharedInstance().requestRecordPermission { _ in
-            DispatchQueue.main.async { refreshStatuses() }
-        }
-    }
-
-    private func requestCameraPermission() {
-        AVCaptureDevice.requestAccess(for: .video) { _ in
-            DispatchQueue.main.async { refreshStatuses() }
-        }
-    }
-
-    private func openAppSettings() {
-        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-        if UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url)
-        }
     }
 
     private func readableLocationStatus(_ status: CLAuthorizationStatus) -> String {
@@ -179,48 +139,47 @@ struct MonitoringCard: View {
     }
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 40, height: 40)
-                    .background(
-                        LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 40, height: 40)
+                .background(
+                    LinearGradient(colors: [.pink, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    Text(status)
-                        .font(.footnote)
-                        .foregroundStyle(isGranted ? .green : .secondary)
-                }
-
-                Spacer()
-
-                if isGranted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                } else {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.secondary)
-                }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                Text(status)
+                    .font(.footnote)
+                    .foregroundStyle(isGranted ? .green : .secondary)
             }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color(.secondarySystemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(isGranted ? Color.green.opacity(0.3) : Color(.separator).opacity(0.5), lineWidth: 0.5)
-            )
+
+            Spacer()
+
+            if isGranted {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            } else {
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.secondary)
+            }
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(isGranted ? Color.green.opacity(0.3) : Color(.separator).opacity(0.5), lineWidth: 0.5)
+        )
+        .contentShape(Rectangle()) // Ensures the whole card is tappable
+        .onTapGesture {
+            action()
+        }
     }
 }
-
-private final class LocationDelegate: NSObject, CLLocationManagerDelegate {}
