@@ -87,7 +87,7 @@ struct EchoSaathWidget: Widget {
         }
         .configurationDisplayName("EchoSaath")
         .description("Your safety status at a glance.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
 
@@ -104,6 +104,12 @@ struct EchoSaathWidgetEntryView: View {
             MediumWidgetView(data: entry.data)
         case .systemLarge:
             LargeWidgetView(data: entry.data)
+        case .accessoryCircular:
+            AccessoryCircularView(data: entry.data)
+        case .accessoryRectangular:
+            AccessoryRectangularView(data: entry.data)
+        case .accessoryInline:
+            AccessoryInlineView(data: entry.data)
         default:
             SmallWidgetView(data: entry.data)
         }
@@ -444,6 +450,64 @@ struct LargeWidgetView: View {
     }
 }
 
+// MARK: - Accessory Circular
+struct AccessoryCircularView: View {
+    let data: WidgetData
+
+    var body: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+            Image(systemName: data.isMonitoring ? "checkmark.shield.fill" : "xmark.shield.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(data.isMonitoring ? .green : .red)
+        }
+    }
+}
+
+// MARK: - Accessory Rectangular
+struct AccessoryRectangularView: View {
+    let data: WidgetData
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Image(systemName: data.isMonitoring ? "checkmark.shield.fill" : "xmark.shield.fill")
+                    .foregroundStyle(data.isMonitoring ? .green : .red)
+                    .imageScale(.small)
+                Text("EchoSaath")
+                    .font(.headline)
+                    .widgetAccentable()
+            }
+            
+            Text(data.isMonitoring ? "System Active" : "Tracking Paused")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            
+            if data.alertCount > 0 {
+                Label("\(data.alertCount) Alerts", systemImage: "bell.badge.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+            } else {
+                Text("All systems clear")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+}
+
+// MARK: - Accessory Inline
+struct AccessoryInlineView: View {
+    let data: WidgetData
+
+    var body: some View {
+        HStack {
+            Image(systemName: data.isMonitoring ? "checkmark.shield.fill" : "xmark.shield.fill")
+            Text("EchoSaath: \(data.isMonitoring ? "Protected" : "Paused")")
+        }
+    }
+}
+
 // MARK: - Previews
 #Preview("Small", as: .systemSmall) {
     EchoSaathWidget()
@@ -472,4 +536,34 @@ struct LargeWidgetView: View {
         lastEventTime: Date().addingTimeInterval(-120), lastEventRisk: "critical",
         userName: "Javin", lastUpdated: .now
     ))
+}
+
+#Preview("Circular", as: .accessoryCircular) {
+    EchoSaathWidget()
+} timeline: {
+    EchoSaathEntry(date: .now, configuration: ConfigurationAppIntent(), data: .placeholder)
+    EchoSaathEntry(date: .now, configuration: ConfigurationAppIntent(), data: WidgetData(
+        isMonitoring: false, alertCount: 0, contactCount: 3,
+        routeStatus: "idle", lastEventReason: "Paused",
+        lastEventTime: nil, lastEventRisk: "normal", userName: "Javin",
+        lastUpdated: .now
+    ))
+}
+
+#Preview("Rectangular", as: .accessoryRectangular) {
+    EchoSaathWidget()
+} timeline: {
+    EchoSaathEntry(date: .now, configuration: ConfigurationAppIntent(), data: .placeholder)
+    EchoSaathEntry(date: .now, configuration: ConfigurationAppIntent(), data: WidgetData(
+        isMonitoring: true, alertCount: 3, contactCount: 3,
+        routeStatus: "tracking", lastEventReason: "Elevated risk detected",
+        lastEventTime: .now, lastEventRisk: "elevated", userName: "Javin",
+        lastUpdated: .now
+    ))
+}
+
+#Preview("Inline", as: .accessoryInline) {
+    EchoSaathWidget()
+} timeline: {
+    EchoSaathEntry(date: .now, configuration: ConfigurationAppIntent(), data: .placeholder)
 }
