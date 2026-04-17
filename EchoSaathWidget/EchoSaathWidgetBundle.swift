@@ -12,6 +12,7 @@ import SwiftUI
 struct EchoSaathWidgetBundle: WidgetBundle {
     var body: some Widget {
         EchoSaathWidget()
+        EchoSaathLockScreenWidget()
         EchoSaathWidgetControl()
         EchoSaathWidgetLiveActivity()
     }

@@ -104,6 +104,9 @@ struct HomeView: View {
                         .padding(.horizontal)
                     }
 
+                    // Emergency Services
+                    emergencyCallsSection
+
                     Spacer(minLength: 40)
                 }
                 .padding(.vertical)
@@ -298,6 +301,74 @@ struct HomeView: View {
         case 12..<17: return "Good Afternoon 🌤"
         case 17..<21: return "Good Evening 🌆"
         default: return "Good Night 🌙"
+        }
+    }
+
+    // MARK: - Emergency Calls Section
+    private var emergencyCallsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Emergency Services")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            HStack(spacing: 12) {
+                emergencyCallButton(
+                    title: "Call Police",
+                    subtitle: "Direct to 112",
+                    icon: "shield.fill",
+                    color: .blue,
+                    action: callPolice
+                )
+                
+                emergencyCallButton(
+                    title: "Ambulance",
+                    subtitle: "Medical Help",
+                    icon: "cross.case.fill",
+                    color: .red,
+                    action: callAmbulance
+                )
+            }
+            .padding(.horizontal)
+        }
+    }
+
+    private func emergencyCallButton(title: String, subtitle: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .frame(width: 40, height: 40)
+                    .background(color)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.subheadline.bold())
+                        .foregroundColor(.primary)
+                    Text(subtitle)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding(12)
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .cornerRadius(14)
+            .shadow(color: color.opacity(0.1), radius: 4, x: 0, y: 2)
+        }
+    }
+
+    private func callPolice() {
+        if let url = URL(string: "tel://112") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func callAmbulance() {
+        // In India 112 is the integrated emergency number
+        if let url = URL(string: "tel://112") {
+            UIApplication.shared.open(url)
         }
     }
 }

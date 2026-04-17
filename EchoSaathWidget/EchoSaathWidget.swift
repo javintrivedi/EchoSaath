@@ -87,7 +87,22 @@ struct EchoSaathWidget: Widget {
         }
         .configurationDisplayName("EchoSaath")
         .description("Your safety status at a glance.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+    }
+}
+
+// MARK: - Lock Screen Widget
+struct EchoSaathLockScreenWidget: Widget {
+    let kind: String = "EchoSaathLockScreenWidget"
+
+    var body: some WidgetConfiguration {
+        AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: EchoSaathTimelineProvider()) { entry in
+            EchoSaathWidgetEntryView(entry: entry)
+                .containerBackground(.clear, for: .widget)
+        }
+        .configurationDisplayName("EchoSaath Lock Screen")
+        .description("Safety status on your lock screen.")
+        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
 
