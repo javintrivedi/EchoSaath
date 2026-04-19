@@ -10,44 +10,51 @@ final class RouteRiskDetector: ObservableObject {
     private let unexpectedStopDuration: TimeInterval = 300 // 5 min
     private var lastAlertTime: Date = .distantPast
     private let alertCooldown: TimeInterval = 120 // 2 min between alerts
-    
+    private let learningKey = "learningPhaseStartDate"
+
     @Published var isDeviating = false // Track current deviation state
 
-    private var isLearningPhase: Bool {
-        let key = "learningPhaseStartDate"
-        let defaults = UserDefaults.standard
-        let startDate: Date
-        if let storedDate = defaults.object(forKey: key) as? Date {
-            startDate = storedDate
-        } else {
-            startDate = Date()
-            defaults.set(startDate, forKey: key)
+    // MARK: - Learning Phase
+
+    /// Returns the persisted learning start date, creating and saving it if it doesn't exist yet.
+    /// Anchored to midnight of the installation day so each calendar day counts as one full day.
+    private var learningStartDate: Date {
+        if let stored = UserDefaults.standard.object(forKey: learningKey) as? Date {
+            return stored
         }
-        
-        // 10-day learning phase
-        let daysPassed = Calendar.current.dateComponents([.day], from: startDate, to: Date()).day ?? 0
-        return daysPassed < 10
+        let today = Calendar.current.startOfDay(for: Date())
+        UserDefaults.standard.set(today, forKey: learningKey)
+        return today
     }
-    
+
+    private var daysPassed: Int {
+        Calendar.current.dateComponents([.day], from: learningStartDate, to: Date()).day ?? 0
+    }
+
+    private var isLearningPhase: Bool { daysPassed < 10 }
+
     var isLearning: Bool { isLearningPhase }
-    
+
     var learningProgress: String {
-        let key = "learningPhaseStartDate"
-        let defaults = UserDefaults.standard
-        let startDate = (defaults.object(forKey: key) as? Date) ?? Date()
-        let daysPassed = Calendar.current.dateComponents([.day], from: startDate, to: Date()).day ?? 0
         if daysPassed >= 10 {
-            return "Fully Personalized"
+            return "Personalized Route Enabled"
         } else {
             return "Day \(daysPassed + 1)/10"
         }
     }
-    
+
+    /// Resets the learning phase so progress restarts from Day 1/10.
+    func resetLearning() {
+        UserDefaults.standard.removeObject(forKey: learningKey)
+    }
+
     var knownRoutesCount: Int {
         RouteStore.shared.loadClusters().count
     }
 
     private init() {}
+
+    // MARK: - Live Route Checks
 
     func checkLiveRoute(points: [RoutePoint], currentLocation: CLLocation) {
         guard !isLearningPhase else { return } // Skip alerts during the 10-day learning phase
@@ -66,7 +73,7 @@ final class RouteRiskDetector: ObservableObject {
                 minDeviation = distance
             }
         }
-        
+
         if minDeviation <= deviationThreshold {
             self.isDeviating = false
         }
@@ -75,8 +82,8 @@ final class RouteRiskDetector: ObservableObject {
             self.isDeviating = true
             lastAlertTime = .now
             DispatchQueue.main.async {
-                EventProcessor.shared.requestSafetyConfirmation(
-                    reason: "⚠️ Route deviation detected — \(Int(minDeviation))m from known safe route"
+                EventProcessor.shared.triggerRouteDeviationAlert(
+                    reason: "Route deviation detected — \(Int(minDeviation))m from your usual path"
                 )
             }
         }

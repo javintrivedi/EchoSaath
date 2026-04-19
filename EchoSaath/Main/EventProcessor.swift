@@ -18,6 +18,8 @@ class EventProcessor: ObservableObject {
     private let storageKey = "echosaath_events"
 
     @Published var showSafetyPrompt: Bool = false
+    @Published var showRouteDeviationAlert: Bool = false
+    private var deviationReason: String = ""
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -165,6 +167,35 @@ class EventProcessor: ObservableObject {
             self.showSafetyPrompt = false
             if !isSafe {
                 self.trigger(level: .critical, reason: "User reported unsafe situation during route deviation")
+            }
+        }
+    }
+
+    // MARK: - Route Deviation Alert
+    func triggerRouteDeviationAlert(reason: String) {
+        deviationReason = reason
+        DispatchQueue.main.async {
+            self.showRouteDeviationAlert = true
+        }
+    }
+
+    func resolveRouteDeviation(isSafe: Bool) {
+        DispatchQueue.main.async {
+            self.showRouteDeviationAlert = false
+            if !isSafe {
+                // Escalate immediately to SOS countdown
+                self.trigger(level: .critical, reason: self.deviationReason.isEmpty
+                    ? "User indicated danger during route deviation"
+                    : self.deviationReason)
+            } else {
+                // Log as an elevated event so it appears in history
+                let event = ProcessedEvent(
+                    reason: self.deviationReason.isEmpty ? "Route deviation — user confirmed safe" : self.deviationReason + " (User confirmed safe)",
+                    riskLevel: .elevated,
+                    latitude: SensorManager.shared.currentLocation?.coordinate.latitude,
+                    longitude: SensorManager.shared.currentLocation?.coordinate.longitude
+                )
+                self.recentEvents.insert(event, at: 0)
             }
         }
     }

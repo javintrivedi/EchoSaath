@@ -64,4 +64,9 @@ final class UserProfileStore: ObservableObject {
     func updateProfile(_ newProfile: UserProfile) {
         self.profile = newProfile
     }
+
+    func resetProfile() {
+        self.profile = UserProfile()
+        UserDefaults.standard.removeObject(forKey: storageKey)
+    }
 }

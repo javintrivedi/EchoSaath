@@ -49,6 +49,11 @@ final class TrustedContactsStore: ObservableObject {
         contacts = newContacts
     }
 
+    func clearAll() {
+        contacts = []
+        UserDefaults.standard.removeObject(forKey: storageKey)
+    }
+
     // MARK: - Persistence
     private func persist() {
         guard !isInitializing else { return }

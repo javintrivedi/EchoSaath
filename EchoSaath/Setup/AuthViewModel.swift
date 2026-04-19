@@ -174,6 +174,26 @@ class AuthViewModel: ObservableObject {
         hasCompletedProfile = false
     }
 
+    // MARK: - Full Reset
+    /// Wipes ALL app data and credentials, returning the user to a brand-new state.
+    func fullReset() {
+        // Delete Keychain credentials
+        KeychainHelper.delete(forKey: emailKey)
+        KeychainHelper.delete(forKey: passwordKey)
+        KeychainHelper.delete(forKey: nameKey)
+
+        // Clear all UserDefaults
+        UserDefaults.standard.set(false, forKey: sessionKey)
+        UserDefaults.standard.set(false, forKey: profileCompletedKey)
+        UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
+
+        // Reset published state -> triggers app to show login screen
+        currentUserName = ""
+        currentUserEmail = ""
+        isLoggedIn = false
+        hasCompletedProfile = false
+    }
+
     // MARK: - Helpers
     private func validateEmail(_ email: String) -> Bool {
         let pattern = #"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$"#

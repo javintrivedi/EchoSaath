@@ -269,10 +269,17 @@ struct SettingsView: View {
             Button("Reset Everything", role: .destructive) {
                 SensorManager.shared.stopMonitoring()
                 EventProcessor.shared.clearAllEvents()
+                RouteStore.shared.clearAll()
+                RouteRiskDetector.shared.resetLearning()
+                TrustedContactsStore.shared.clearAll()
+                UserProfileStore.shared.resetProfile()
+                NotificationLogger.shared.clearAll()
                 enableMonitoring = false
+                // Wipe credentials and send user back to the start
+                AuthViewModel.shared.fullReset()
             }
         } message: {
-            Text("This will clear all events and stop monitoring. This cannot be undone.")
+            Text("This will erase ALL data — events, routes, contacts, your profile, and your account. The app will restart from scratch. This cannot be undone.")
         }
         .confirmationDialog("Log out of EchoSaath?", isPresented: $showingLogoutConfirmation, titleVisibility: .visible) {
             Button("Log Out", role: .destructive) {

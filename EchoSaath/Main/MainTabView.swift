@@ -37,9 +37,13 @@ struct MainTabView: View {
         .fullScreenCover(isPresented: $processor.isCountingDown) {
             EmergencyCountdownView()
         }
+        .fullScreenCover(isPresented: $processor.showRouteDeviationAlert) {
+            RouteDeviationAlertView()
+        }
         .overlay {
             if processor.showSafetyPrompt {
                 SafetyPromptOverlay()
+                    .environmentObject(processor)
                     .zIndex(90)
             }
         }

@@ -77,6 +77,18 @@ final class RouteStore {
         save(clusters, to: clustersFile)
     }
 
+    // MARK: - Reset
+
+    func clearAll() {
+        cachedRoutes = []
+        cachedClusters = []
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let routeURL = docs.appendingPathComponent(routesFile)
+        let clusterURL = docs.appendingPathComponent(clustersFile)
+        try? FileManager.default.removeItem(at: routeURL)
+        try? FileManager.default.removeItem(at: clusterURL)
+    }
+
     // MARK: - File I/O
 
     private func fileURL(for name: String) -> URL {
