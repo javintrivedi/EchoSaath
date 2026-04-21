@@ -35,7 +35,7 @@ struct EvidenceView: View {
 
             VStack(spacing: 20) {
                 VStack(spacing: 16) {
-                    Image(systemName: "video.fill")
+                    Image(systemName: "location.circle.fill")
                         .symbolRenderingMode(.hierarchical)
                         .font(.system(size: 72, weight: .semibold))
                         .foregroundStyle(.pink)
@@ -46,12 +46,12 @@ struct EvidenceView: View {
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
-                    Text("Evidence That Speaks")
+                    Text("Always Watching Over You")
                         .font(.largeTitle.bold())
                         .foregroundStyle(.primary)
                         .accessibilityAddTraits(.isHeader)
 
-                    Text("Audio and video recordings are automatically captured during emergencies.")
+                    Text("EchoSaath silently monitors your safety using your phone's sensors — no camera or microphone needed.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -69,9 +69,9 @@ struct EvidenceView: View {
                 )
 
                 VStack(alignment: .leading, spacing: 12) {
-                    featureRow(icon: "waveform.badge.mic", title: "Auto-record audio", subtitle: "Capture sound evidence when SOS is active.")
-                    featureRow(icon: "video.circle.fill", title: "Quick video", subtitle: "Start recording instantly with minimal interaction.")
-                    featureRow(icon: "lock.shield.fill", title: "Secure storage", subtitle: "Encrypt and store recordings safely.")
+                    featureRow(icon: "location.fill", title: "Live location tracking", subtitle: "Continuously monitors your GPS to detect route deviations.")
+                    featureRow(icon: "waveform.path.ecg", title: "Shake-to-SOS", subtitle: "Detects sudden impact or shake gesture to trigger an alert.")
+                    featureRow(icon: "envelope.fill", title: "Instant SMS alerts", subtitle: "Notifies trusted contacts with your location the moment SOS fires.")
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
 
@@ -102,7 +102,7 @@ struct EvidenceView: View {
             .padding()
             .onAppear { appear = true }
         }
-        .navigationTitle("Evidence")
+        .navigationTitle("How It Works")
     }
 
     @ViewBuilder

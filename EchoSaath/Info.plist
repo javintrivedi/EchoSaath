@@ -20,16 +20,10 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>EchoSaath uses the camera to record evidence during emergencies.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Allow EchoSaath to access your location in the background for continuous safety monitoring.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>EchoSaath uses your location to enhance safety monitoring.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>EchoSaath uses the microphone to detect audio cues during emergencies.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>EchoSaath saves captured media to your photo library.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIBackgroundModes</key>

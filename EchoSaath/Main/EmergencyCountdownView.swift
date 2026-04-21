@@ -1,14 +1,11 @@
 import SwiftUI
-import AVFoundation
 import UIKit
-import AudioToolbox
 
 struct EmergencyCountdownView: View {
     @ObservedObject var processor = EventProcessor.shared
     @AppStorage("alertCountdownDuration") private var countdownDuration: Int = 10
     @State private var timeRemaining = 10
     @State private var timer: Timer?
-    @State private var audioPlayer: AVAudioPlayer?
     
     var body: some View {
         ZStack {
@@ -85,10 +82,6 @@ struct EmergencyCountdownView: View {
         .onAppear {
             timeRemaining = countdownDuration
             startCountdown()
-            playAlertSound()
-        }
-        .onDisappear {
-            stopAlertSound()
         }
     }
     
@@ -106,7 +99,6 @@ struct EmergencyCountdownView: View {
     private func cancelAlert() {
         timer?.invalidate()
         timer = nil
-        stopAlertSound()
         withAnimation {
             processor.cancelCountdown()
         }
@@ -115,17 +107,7 @@ struct EmergencyCountdownView: View {
     private func executeSOS() {
         timer?.invalidate()
         timer = nil
-        stopAlertSound()
         processor.finalizeAlert()
-    }
-    
-    private func playAlertSound() {
-        // In a real app, we'd bundle an alert.mp3. Using system sound for now.
-        AudioServicesPlaySystemSound(1005) // Alarm sound
-    }
-    
-    private func stopAlertSound() {
-        // Stop logic if using AVAudioPlayer
     }
 }
 

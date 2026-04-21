@@ -1,15 +1,12 @@
 import SwiftUI
 import CoreLocation
-import AVFoundation
 
 struct MonitoringSetupView: View {
     @StateObject private var viewModel = MonitoringSetupViewModel()
 
     private var allPermissionsGranted: Bool {
         let loc = viewModel.locationStatus == .authorizedAlways || viewModel.locationStatus == .authorizedWhenInUse
-        let mic = viewModel.micAuthorized == .granted
-        let cam = viewModel.cameraAuthorized == .authorized
-        return loc && mic && cam && viewModel.backgroundRefreshEnabled
+        return loc && viewModel.backgroundRefreshEnabled
     }
 
     var body: some View {
@@ -55,14 +52,6 @@ struct MonitoringSetupView: View {
                         viewModel.requestLocationPermission()
                     }
 
-                    MonitoringCard(title: "Microphone", icon: "mic.fill", status: readableMicStatus(viewModel.micAuthorized)) {
-                        viewModel.requestMicrophonePermission()
-                    }
-
-                    MonitoringCard(title: "Camera", icon: "video.fill", status: readableCameraStatus(viewModel.cameraAuthorized)) {
-                        viewModel.requestCameraPermission()
-                    }
-
                     MonitoringCard(title: "Background Refresh", icon: "bolt.fill", status: viewModel.backgroundRefreshEnabled ? "Enabled" : "Disabled") {
                         viewModel.openAppSettings()
                     }
@@ -101,25 +90,6 @@ struct MonitoringSetupView: View {
         switch status {
         case .authorizedAlways: return "Always ✓"
         case .authorizedWhenInUse: return "When In Use"
-        case .denied: return "Denied"
-        case .restricted: return "Restricted"
-        case .notDetermined: return "Not Set"
-        @unknown default: return "Unknown"
-        }
-    }
-
-    private func readableMicStatus(_ status: AVAudioSession.RecordPermission) -> String {
-        switch status {
-        case .granted: return "Allowed ✓"
-        case .denied: return "Denied"
-        case .undetermined: return "Not Set"
-        @unknown default: return "Unknown"
-        }
-    }
-
-    private func readableCameraStatus(_ status: AVAuthorizationStatus) -> String {
-        switch status {
-        case .authorized: return "Allowed ✓"
         case .denied: return "Denied"
         case .restricted: return "Restricted"
         case .notDetermined: return "Not Set"
@@ -177,7 +147,7 @@ struct MonitoringCard: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(isGranted ? Color.green.opacity(0.3) : Color(.separator).opacity(0.5), lineWidth: 0.5)
         )
-        .contentShape(Rectangle()) // Ensures the whole card is tappable
+        .contentShape(Rectangle())
         .onTapGesture {
             action()
         }
